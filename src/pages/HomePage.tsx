@@ -17,11 +17,11 @@ export function HomePage() {
     <>
       <HeroSection />
       <BrandStatement />
-      <ProductSection eyebrow="The edit" title="Featured products" description="A considered starting point for your next addition." products={products.slice(0, 4)} linkTo="/shop" />
+      <ProductSection eyebrow="The edit" title="Featured products" description="A considered starting point for your next addition." products={products.slice(0, 3)} linkTo="/shop" />
       <CategoryGridSection />
-      <ProductSection eyebrow="Just in" title="New arrivals" description="Fresh cards and essentials for the collection." products={newArrivals.length ? newArrivals.slice(0, 4) : products.slice(0, 4)} linkTo="/new-arrivals" />
+      <ProductSection eyebrow="Just in" title="New arrivals" description="Fresh cards and essentials for the collection." products={newArrivals.length ? newArrivals.slice(0, 3) : products.slice(0, 3)} linkTo="/new-arrivals" />
       <ProtectionSection />
-      <ProductSection eyebrow="Collector favourites" title="Best sellers" description="The pieces collectors come back to, season after season." products={bestSellers.length ? bestSellers.slice(0, 4) : products.slice(0, 4)} linkTo="/best-sellers" />
+      <ProductSection eyebrow="Collector favourites" title="Best sellers" description="The pieces collectors come back to, season after season." products={bestSellers.length ? bestSellers.slice(0, 3) : products.slice(0, 3)} linkTo="/best-sellers" />
       <ProductMarquee products={products} />
       <TrustSection />
       <NewsletterSection />

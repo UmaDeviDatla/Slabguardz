@@ -23,13 +23,27 @@ const heroTrustSignals = [
   { label: 'Pan-India Express', desc: 'Reliable doorstep dispatch' },
 ]
 
+function getProductDescription(product: { description?: string; category: string; name: string }) {
+  if (product.description && product.description.trim()) {
+    const plain = product.description.replace(/<[^>]*>?/gm, '').trim()
+    if (plain.length > 5) return plain
+  }
+  if (product.category === 'pokemon-cards') {
+    return 'Authenticated PSA graded Pokémon collectible single, preserved in collector-grade condition.'
+  }
+  if (product.category === 'slabguardz-protection') {
+    return 'Precision snap-on TPU bumper case with drop-absorbing corner defense.'
+  }
+  return 'Premium collector display and storage solution engineered for graded cards.'
+}
+
 export function HeroSection() {
   const { products } = useProductCatalogState()
   const { addItem } = useCart()
   const [addedId, setAddedId] = useState<string | null>(null)
 
-  // Use top products from Hostinger API, or fallback to authentic showcase items
-  const spotlightProducts = products.length > 0 ? products.slice(0, 4) : []
+  // Exactly 3 products per row matching the category section
+  const spotlightProducts = products.length > 0 ? products.slice(0, 3) : []
 
   const handleQuickAdd = (product: typeof products[0]) => {
     addItem(product)
@@ -100,7 +114,7 @@ export function HeroSection() {
           ))}
         </motion.div>
 
-        {/* Live Product Spotlight Showcase (Hostinger API Products) */}
+        {/* Live Product Spotlight Showcase (Hostinger API Products) — 3 products per row */}
         <div className="graded-spotlight-section">
           <div className="graded-spotlight-header">
             <div>
@@ -108,7 +122,7 @@ export function HeroSection() {
               <h2 className="spotlight-title">Precision Cases & Collector Grails</h2>
             </div>
             <Link to="/shop" className="spotlight-view-all">
-              <span>View All ({products.length || 6})</span>
+              <span>View All ({products.length || 3})</span>
               <ArrowUpRight size={15} />
             </Link>
           </div>
@@ -133,28 +147,34 @@ export function HeroSection() {
                           className="graded-card-img"
                         />
                       </Link>
-                      {product.badge && (
-                        <span className="graded-badge-pill">{product.badge}</span>
-                      )}
+                      <span className="graded-badge-pill">
+                        {product.badge || (product.stockStatus === 'in-stock' ? 'IN STOCK' : 'VERIFIED')}
+                      </span>
                     </div>
                     <div className="graded-card-body">
                       <span className="graded-card-cat">{product.category.replaceAll('-', ' ')}</span>
                       <h3 className="graded-card-name">
                         <Link to={`/product/${product.id}`}>{product.name}</Link>
                       </h3>
+                      <p className="graded-card-desc">
+                        {getProductDescription(product)}
+                      </p>
                       <div className="graded-card-footer">
-                        <PriceDisplay
-                          price={product.price}
-                          currencyCode={product.currencyCode}
-                          compareAtPrice={product.compareAtPrice}
-                        />
+                        <div className="graded-card-price-wrap">
+                          <PriceDisplay
+                            price={product.price}
+                            currencyCode={product.currencyCode}
+                            compareAtPrice={product.compareAtPrice}
+                          />
+                        </div>
                         <button
                           type="button"
-                          className={`graded-quick-btn${isAdded ? ' is-added' : ''}`}
+                          className={`graded-card-action-btn${isAdded ? ' is-added' : ''}`}
                           onClick={() => handleQuickAdd(product)}
                           aria-label={`Add ${product.name} to cart`}
                         >
-                          {isAdded ? <Check size={15} /> : <ShoppingBag size={15} />}
+                          <span>{isAdded ? 'Added' : 'Add to Cart'}</span>
+                          {isAdded ? <Check size={14} /> : <ShoppingBag size={14} />}
                         </button>
                       </div>
                     </div>
@@ -162,12 +182,35 @@ export function HeroSection() {
                 )
               })
             ) : (
-              // Showcase authentic slab bumper cards while Hostinger loads
+              // Showcase authentic slab bumper cards while Hostinger loads — 3 per row
               [
-                { id: 'psa-gengar', title: 'SlabGuardz Bumper — Crimson Flame', cat: 'PSA Precision Fit', img: '/slabs/slab-3.jpeg', price: 499 },
-                { id: 'psa-mew', title: 'SlabGuardz Bumper — Royal Purple', cat: 'PSA Precision Fit', img: '/slabs/slab-2.jpeg', price: 499 },
-                { id: 'psa-dragonite', title: 'SlabGuardz Bumper — Onyx Stealth', cat: 'PSA Precision Fit', img: '/slabs/slab-1.jpeg', price: 499 },
-                { id: 'psa-emerald', title: 'SlabGuardz Bumper — Emerald Glow', cat: 'CGC & PSA Fit', img: '/slabs/slab-4.jpeg', price: 499 },
+                {
+                  id: 'psa-gengar',
+                  title: 'SlabGuardz Bumper — Crimson Flame',
+                  cat: 'SLABGUARDZ PROTECTION',
+                  desc: 'Precision snap-on TPU bumper cases engineered for PSA & CGC slabs.',
+                  img: '/slabs/slab-3.jpeg',
+                  price: 499,
+                  badge: 'FLAGSHIP',
+                },
+                {
+                  id: 'psa-dragonite',
+                  title: 'Graded Pokémon Cards',
+                  cat: 'AUTHENTIC GRAILS',
+                  desc: 'Authenticated PSA & CGC vintage holos, modern grails, and Japanese gems.',
+                  img: '/slabs/slab-1.jpeg',
+                  price: 1499,
+                  badge: 'VERIFIED',
+                },
+                {
+                  id: 'psa-mew',
+                  title: 'Collector Accessories',
+                  cat: 'GEAR & DISPLAY',
+                  desc: 'Precision card sleeves, acrylic stands, and travel protection kits.',
+                  img: '/slabs/slab-2.jpeg',
+                  price: 799,
+                  badge: 'ESSENTIALS',
+                },
               ].map((item) => (
                 <motion.div
                   key={item.id}
@@ -184,17 +227,19 @@ export function HeroSection() {
                         className="graded-card-img"
                       />
                     </Link>
-                    <span className="graded-badge-pill">POPULAR</span>
+                    <span className="graded-badge-pill">{item.badge}</span>
                   </div>
                   <div className="graded-card-body">
                     <span className="graded-card-cat">{item.cat}</span>
                     <h3 className="graded-card-name">
                       <Link to="/category/slabguardz-protection">{item.title}</Link>
                     </h3>
+                    <p className="graded-card-desc">{item.desc}</p>
                     <div className="graded-card-footer">
                       <span className="graded-price">₹{item.price}</span>
-                      <Link to="/shop" className="graded-quick-btn" aria-label="View product">
-                        <ArrowUpRight size={15} />
+                      <Link to="/shop" className="graded-card-action-btn">
+                        <span>Shop Now</span>
+                        <ArrowUpRight size={14} />
                       </Link>
                     </div>
                   </div>
