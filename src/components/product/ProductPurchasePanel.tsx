@@ -1,5 +1,6 @@
 import { Heart, Minus, Plus, ShoppingBag, Zap } from 'lucide-react'
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import type { Product } from '../../data/products'
 import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
@@ -37,8 +38,12 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
       {product.sku && <p className="product-detail-meta"><strong>SKU</strong>{product.sku}</p>}
       <div className="product-purchase-actions">
         <div className="quantity-selector" aria-label="Quantity selector"><button type="button" aria-label="Decrease quantity" disabled={quantity === 1} onClick={() => setQuantity((current) => Math.max(1, current - 1))}><Minus size={15} /></button><span aria-live="polite">{quantity}</span><button type="button" aria-label="Increase quantity" disabled={isOutOfStock || isAtStockLimit} onClick={() => setQuantity((current) => Math.min(maxQuantity, current + 1))}><Plus size={15} /></button></div>
-        <Button disabled={isOutOfStock} onClick={() => addItem(product, quantity)}><ShoppingBag size={17} /> Add to Cart</Button>
-        <Button variant="secondary" disabled={isOutOfStock} onClick={() => { addItem(product, quantity); navigate('/cart') }}><Zap size={16} /> Buy Now</Button>
+        <motion.div whileTap={{ scale: 0.97 }}>
+          <Button disabled={isOutOfStock} onClick={() => addItem(product, quantity)}><ShoppingBag size={17} /> Add to Cart</Button>
+        </motion.div>
+        <motion.div whileTap={{ scale: 0.97 }}>
+          <Button variant="secondary" disabled={isOutOfStock} onClick={() => { addItem(product, quantity); navigate('/cart') }}><Zap size={16} /> Buy Now</Button>
+        </motion.div>
         <button className={`product-detail-wishlist${isSaved ? ' is-active' : ''}`} type="button" aria-label={`${isSaved ? 'Remove' : 'Add'} ${product.name} ${isSaved ? 'from' : 'to'} wishlist`} aria-pressed={isSaved} onClick={() => toggleWishlist(product)}><Heart size={19} fill={isSaved ? 'currentColor' : 'none'} /></button>
       </div>
       <p className="product-purchase-note">Taxes and shipping calculated at checkout. Checkout integration coming soon.</p>

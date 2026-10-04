@@ -40,7 +40,7 @@ export function ProductMarquee({ products }: ProductMarqueeProps) {
         <p>Keep the pieces you care about in view, in motion, and ready for the next addition.</p>
       </div>
       <div className="marquee-viewport">
-        <div className="marquee-track">
+        <div className="marquee-track home-marquee-track">
           <MarqueeGroup products={products} />
           <MarqueeGroup products={products} duplicate />
         </div>

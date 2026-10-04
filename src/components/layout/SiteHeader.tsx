@@ -1,6 +1,7 @@
 import { ChevronDown, Heart, Menu, Moon, Search, ShoppingBag, Sun, UserRound, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { navigationItems, type NavigationItem } from '../../data/navigation'
 import { useCart } from '../../hooks/useCart'
 import { useWishlist } from '../../hooks/useWishlist'
@@ -75,31 +76,54 @@ export function SiteHeader() {
               <ChevronDown size={14} strokeWidth={1.8} />
             </button>
           </div>
-          {isShopMenuOpen && <DesktopShopMenu items={shopItem.children ?? []} onNavigate={() => setIsShopMenuOpen(false)} />}
+          <AnimatePresence>
+            {isShopMenuOpen && <DesktopShopMenu items={shopItem.children ?? []} onNavigate={() => setIsShopMenuOpen(false)} />}
+          </AnimatePresence>
         </div>
         {primaryItems.map((item) => <NavLink key={item.to} to={item.to}>{item.label}</NavLink>)}
       </nav>
-      {isMobileMenuOpen && <MobileNavigation items={navigationItems} onClose={() => setIsMobileMenuOpen(false)} />}
+      <AnimatePresence>
+        {isMobileMenuOpen && <MobileNavigation items={navigationItems} onClose={() => setIsMobileMenuOpen(false)} />}
+      </AnimatePresence>
     </header>
   )
 }
 
 function DesktopShopMenu({ items, onNavigate }: { items: NavigationItem[]; onNavigate: () => void }) {
   return (
-    <div className="desktop-shop-menu">
+    <motion.div 
+      className="desktop-shop-menu"
+      initial={{ opacity: 0, y: -8 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0, y: -8 }} 
+      transition={{ duration: 0.15 }}
+    >
       <p className="eyebrow">Browse the collection</p>
       <div className="desktop-shop-links">
         {items.map((item) => <NavLink key={item.to} to={item.to} onClick={onNavigate}>{item.label}</NavLink>)}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
 function MobileNavigation({ items, onClose }: { items: NavigationItem[]; onClose: () => void }) {
   return (
-    <div className="mobile-navigation-layer">
+    <motion.div 
+      className="mobile-navigation-layer"
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }} 
+      transition={{ duration: 0.2 }}
+    >
       <button className="mobile-navigation-backdrop" type="button" aria-label="Close navigation" onClick={onClose} />
-      <aside className="mobile-navigation" aria-label="Mobile navigation">
+      <motion.aside 
+        className="mobile-navigation" 
+        aria-label="Mobile navigation"
+        initial={{ x: '-100%' }} 
+        animate={{ x: 0 }} 
+        exit={{ x: '-100%' }} 
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+      >
         <div className="mobile-navigation-header">
           <span className="wordmark"><img className="site-logo" src="/slabguardz_logo.png" alt="SlabGuardz" /></span>
           <button type="button" aria-label="Close navigation" onClick={onClose}><X size={21} strokeWidth={1.8} /></button>
@@ -112,7 +136,7 @@ function MobileNavigation({ items, onClose }: { items: NavigationItem[]; onClose
             </div>
           ))}
         </nav>
-      </aside>
-    </div>
+      </motion.aside>
+    </motion.div>
   )
 }
