@@ -1,80 +1,123 @@
-import { ArrowRight, PackageSearch, RotateCcw, XCircle } from 'lucide-react'
+import { ArrowRight, PackageSearch, RotateCcw, XCircle, Heart, ShoppingBag, ShieldCheck, Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { useCart } from '../hooks/useCart'
+import { useWishlist } from '../hooks/useWishlist'
 
 const accountActions = [
   {
     to: '/contact?help=track',
     icon: PackageSearch,
-    title: 'Get Order Details',
-    description: 'Request your order status and details from our support team.',
-    action: 'Get Order Details',
+    title: 'Track Your Shipment',
+    description: 'Get real-time courier tracking updates, docket numbers, and delivery timelines.',
+    action: 'Track Order',
   },
   {
     to: '/contact?help=return',
     icon: RotateCcw,
-    title: 'Return an Order',
-    description: 'Submit a return request for an order you\'ve received.',
-    action: 'Return Order',
+    title: 'Returns & Replacements',
+    description: 'Initiate a replacement or return request for transit-damaged items.',
+    action: 'Return Request',
   },
   {
     to: '/contact?help=cancel',
     icon: XCircle,
-    title: 'Cancel an Order',
-    description: 'Request cancellation of an eligible order.',
+    title: 'Order Cancellations',
+    description: 'Request cancellation of orders prior to courier warehouse dispatch.',
     action: 'Cancel Order',
+  },
+  {
+    to: '/contact',
+    icon: Mail,
+    title: 'Collector Concierge',
+    description: 'Speak directly with our card authenticity and grading specialists.',
+    action: 'Contact Concierge',
   },
 ]
 
 export function AccountPage() {
+  const { itemCount } = useCart()
+  const { count: wishlistCount } = useWishlist()
+
   return (
     <div className="account-page">
       <div className="account-page-intro">
         <nav className="collection-breadcrumbs" aria-label="Breadcrumb">
           <Link to="/">Home</Link>
           <span aria-hidden="true">/</span>
-          <span aria-current="page">Account</span>
+          <span aria-current="page">Account & Support Hub</span>
         </nav>
-        <section className="account-header" aria-labelledby="account-page-title">
-          <p className="eyebrow">Your account</p>
-          <h1 id="account-page-title">Account</h1>
-          <p className="account-description">Manage your order support requests and get help with your SlabGuardz purchases.</p>
+
+        <section className="account-header">
+          <p className="eyebrow">Collector Hub</p>
+          <h1>Account & Support Services</h1>
+          <p className="account-description">
+            Access dedicated assistance for your SlabGuardz orders, shipments, and collectible inquiries.
+          </p>
         </section>
       </div>
 
-      <section className="account-support-section" aria-labelledby="account-support-title">
+      {/* Quick stats / navigation bar */}
+      <div className="account-quick-bar">
+        <Link to="/wishlist" className="account-quick-item">
+          <Heart size={20} className="quick-item-icon" />
+          <div>
+            <strong>Saved to Wishlist</strong>
+            <span>{wishlistCount} items saved</span>
+          </div>
+          <ArrowRight size={16} />
+        </Link>
+        <Link to="/cart" className="account-quick-item">
+          <ShoppingBag size={20} className="quick-item-icon" />
+          <div>
+            <strong>Active Cart</strong>
+            <span>{itemCount} items ready for checkout</span>
+          </div>
+          <ArrowRight size={16} />
+        </Link>
+      </div>
+
+      {/* Order Support Actions */}
+      <section className="account-support-section">
         <div className="account-support-header">
-          <p className="eyebrow">Order support</p>
-          <h2 id="account-support-title">Need help with an order?</h2>
-          <p>Get your order details, request a return, or contact our support team. Our Orders team will verify your order before processing any request.</p>
+          <p className="eyebrow">Order Services</p>
+          <h2>How can we assist you today?</h2>
+          <p>
+            Select a service below to connect with our dedicated team. We verify your order details immediately to expedite all inquiries.
+          </p>
         </div>
 
-        <div className="account-actions-grid" role="list" aria-label="Account support actions">
+        <div className="account-actions-grid" role="list">
           {accountActions.map(({ to, icon: Icon, title, description, action }) => (
-            <Link key={title} to={to} className="account-action-card" role="listitem">
-              <div className="account-action-icon" aria-hidden="true"><Icon size={22} strokeWidth={1.8} /></div>
-              <div className="account-action-copy">
-                <h3>{title}</h3>
-                <p>{description}</p>
-              </div>
-              <span className="account-action-link">{action} <ArrowRight size={16} strokeWidth={1.9} /></span>
-            </Link>
+            <motion.div whileHover={{ y: -4 }} key={title}>
+              <Link to={to} className="account-action-card" role="listitem">
+                <div className="account-action-icon" aria-hidden="true">
+                  <Icon size={22} strokeWidth={1.8} />
+                </div>
+                <div className="account-action-copy">
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </div>
+                <span className="account-action-link">
+                  {action} <ArrowRight size={16} strokeWidth={2} />
+                </span>
+              </Link>
+            </motion.div>
           ))}
         </div>
 
-        <div className="account-contact-card">
-          <div>
-            <p className="eyebrow">Contact support</p>
-            <h3>Need help with something else?</h3>
+        {/* Collector Guarantee Card */}
+        <div className="account-guarantee-card">
+          <div className="guarantee-icon-box">
+            <ShieldCheck size={32} />
           </div>
-          <Link to="/contact" className="button button-secondary">
-            Contact Us <ArrowRight size={16} strokeWidth={1.9} />
-          </Link>
+          <div className="guarantee-content">
+            <h3>The SlabGuardz Authenticity & Transit Guarantee</h3>
+            <p>
+              Every transaction made with SlabGuardz is protected by our zero-counterfeit policy and full-value transit insurance. For expedited assistance regarding custom card grading orders, email us at <a href="mailto:support@slabguardz.in">support@slabguardz.in</a>.
+            </p>
+          </div>
         </div>
-      </section>
-
-      <section className="account-info-card" aria-labelledby="account-info-title">
-        <p className="eyebrow">Customer accounts</p>
-        <h2 id="account-info-title">Full account history and previous orders will be available when secure customer account access is connected.</h2>
       </section>
     </div>
   )

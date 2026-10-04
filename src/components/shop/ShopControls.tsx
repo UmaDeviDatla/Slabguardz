@@ -1,4 +1,4 @@
-import { Filter, Search, SlidersHorizontal } from 'lucide-react'
+import { Search, SlidersHorizontal } from 'lucide-react'
 import type { ProductCategory } from '../../data/products'
 import { shopCategories, sortOptions, type SortOption } from '../../data/shop'
 
@@ -11,30 +11,68 @@ type ShopControlsProps = {
   onSortChange: (sort: SortOption) => void
 }
 
-export function ShopControls({ category, search, sort, onCategoryChange, onSearchChange, onSortChange }: ShopControlsProps) {
+export function ShopControls({
+  category,
+  search,
+  sort,
+  onCategoryChange,
+  onSearchChange,
+  onSortChange,
+}: ShopControlsProps) {
   return (
     <div className="shop-controls">
+      {/* Category Pills Navigation */}
       <nav className="shop-category-nav" aria-label="Shop categories">
-        {shopCategories.map((item) => <button className={category === item.value ? 'is-active' : ''} key={item.value} type="button" onClick={() => onCategoryChange(item.value)}>{item.label}</button>)}
+        {shopCategories.map((item) => (
+          <button
+            className={`shop-category-pill ${category === item.value ? 'is-active' : ''}`}
+            key={item.value}
+            type="button"
+            onClick={() => onCategoryChange(item.value)}
+          >
+            {item.label}
+          </button>
+        ))}
       </nav>
+
+      {/* Toolbar: Search & Sort */}
       <div className="shop-toolbar">
         <label className="shop-search">
           <Search size={17} strokeWidth={1.8} />
           <span className="sr-only">Search products</span>
-          <input type="search" value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder="Search products" />
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder="Search within collection..."
+          />
         </label>
         <label className="shop-sort">
           <SlidersHorizontal size={16} strokeWidth={1.8} />
           <span className="sr-only">Sort products</span>
           <select value={sort} onChange={(event) => onSortChange(event.target.value as SortOption)}>
-            {sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </label>
       </div>
-      <details className="shop-mobile-filters">
-        <summary><Filter size={16} /> Filter by category</summary>
-        <div>{shopCategories.map((item) => <button className={category === item.value ? 'is-active' : ''} key={item.value} type="button" onClick={() => onCategoryChange(item.value)}>{item.label}</button>)}</div>
-      </details>
+
+      {/* Mobile Quick Category Selector */}
+      <div className="shop-mobile-quick-categories">
+        {shopCategories.map((item) => (
+          <button
+            className={`shop-category-pill-mobile ${category === item.value ? 'is-active' : ''}`}
+            key={item.value}
+            type="button"
+            onClick={() => onCategoryChange(item.value)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

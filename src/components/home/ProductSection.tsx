@@ -6,7 +6,8 @@ import { ProductCard } from '../product/ProductCard'
 import { Container } from '../ui/Container'
 import { CollectionToolbar } from '../ui/CollectionToolbar'
 import { SectionHeading } from '../ui/SectionHeading'
-import { AnimateOnScroll, StaggerContainer, staggerChildVariants } from '../ui/AnimateOnScroll'
+import { AnimateOnScroll, StaggerContainer } from '../ui/AnimateOnScroll'
+import { staggerChildVariants } from '../ui/animationVariants'
 
 type ProductSectionProps = {
   eyebrow: string

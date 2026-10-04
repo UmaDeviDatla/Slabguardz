@@ -15,10 +15,9 @@ export const navigationItems: NavigationItem[] = [
       { label: 'Accessories', to: '/category/accessories' },
     ],
   },
-  { label: 'Pokémon cards', to: '/category/pokemon-cards' },
-  { label: 'SlabGuardz protection', to: '/category/slabguardz-protection' },
-  { label: 'Accessories', to: '/category/accessories' },
   { label: 'New arrivals', to: '/new-arrivals' },
   { label: 'Best sellers', to: '/best-sellers' },
+  { label: 'Protection', to: '/category/slabguardz-protection' },
+  { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
 ]

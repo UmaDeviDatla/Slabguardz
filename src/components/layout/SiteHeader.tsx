@@ -1,5 +1,5 @@
 import { ChevronDown, Heart, Menu, Moon, Search, ShoppingBag, Sun, UserRound, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { navigationItems, type NavigationItem } from '../../data/navigation'
@@ -15,17 +15,30 @@ export function SiteHeader() {
   const [search, setSearch] = useState('')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false)
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
+  const shopMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsMobileMenuOpen(false)
         setIsShopMenuOpen(false)
+        setIsMobileSearchOpen(false)
+      }
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (shopMenuRef.current && !shopMenuRef.current.contains(event.target as Node)) {
+        setIsShopMenuOpen(false)
       }
     }
 
     document.addEventListener('keydown', closeOnEscape)
-    return () => document.removeEventListener('keydown', closeOnEscape)
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('keydown', closeOnEscape)
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
   }, [])
 
   useEffect(() => {
@@ -33,57 +46,193 @@ export function SiteHeader() {
     return () => { document.body.style.overflow = '' }
   }, [isMobileMenuOpen])
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (search.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(search.trim())}`)
+      setIsMobileSearchOpen(false)
+    } else {
+      navigate('/shop')
+    }
+  }
+
   const shopItem = navigationItems[0]
   const primaryItems = navigationItems.slice(1)
 
   return (
     <header className="site-header-wrap">
-      <div className="announcement-bar">Free shipping on orders over ₹1,499</div>
+      <div className="announcement-bar">
+        <span>Free India-wide express shipping on orders over ₹1,499 · 100% Authentic Collectibles</span>
+      </div>
       <div className="site-header">
-        <button className="mobile-menu-toggle" type="button" aria-label="Open navigation" aria-expanded={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(true)}>
-          <Menu size={21} strokeWidth={1.8} />
+        <button
+          className="mobile-menu-toggle"
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded={isMobileMenuOpen}
+          onClick={() => setIsMobileMenuOpen(true)}
+        >
+          <Menu size={22} strokeWidth={1.8} />
         </button>
+
         <Link className="wordmark" to="/" aria-label="SlabGuardz home">
           <img className="site-logo" src="/slabguardz_logo.png" alt="SlabGuardz" />
         </Link>
-        <form className="header-search" role="search" onSubmit={(event) => { event.preventDefault(); navigate(search.trim() ? `/shop?search=${encodeURIComponent(search.trim())}` : '/shop') }}>
-          <button className="header-search-submit" type="submit" aria-label="Search products"><Search size={18} strokeWidth={1.8} aria-hidden="true" /></button>
-          <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search cards, slabs and accessories" aria-label="Search products" />
+
+        {/* Desktop Search Bar */}
+        <form className="header-search" role="search" onSubmit={handleSearchSubmit}>
+          <button className="header-search-submit" type="submit" aria-label="Search products">
+            <Search size={18} strokeWidth={1.8} aria-hidden="true" />
+          </button>
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search cards, slabs, sleeves and accessories..."
+            aria-label="Search products"
+          />
         </form>
+
         <div className="header-actions">
-          <button className="theme-toggle" type="button" aria-label={theme === 'day' ? 'Switch to dark theme' : 'Switch to light theme'} aria-pressed={theme === 'night'} onClick={toggleTheme}>
-            {theme === 'day' ? <Sun size={18} strokeWidth={1.8} /> : <Moon size={18} strokeWidth={1.8} />}
+          {/* Mobile search toggle */}
+          <button
+            className="mobile-search-toggle"
+            type="button"
+            aria-label="Open search"
+            onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+          >
+            <Search size={20} strokeWidth={1.8} />
+          </button>
+
+          {/* Theme Toggle */}
+          <button
+            className="theme-toggle"
+            type="button"
+            aria-label={theme === 'day' ? 'Switch to dark theme' : 'Switch to light theme'}
+            aria-pressed={theme === 'night'}
+            onClick={toggleTheme}
+          >
+            {theme === 'day' ? <Sun size={17} strokeWidth={1.8} /> : <Moon size={17} strokeWidth={1.8} />}
             <span>{theme === 'day' ? 'Day' : 'Night'}</span>
           </button>
-          <Link to="/account" aria-label="Account">
-            <UserRound size={19} strokeWidth={1.8} />
+
+          {/* Account */}
+          <Link to="/account" aria-label="Account" className="header-action-btn">
+            <UserRound size={20} strokeWidth={1.8} />
           </Link>
-          <Link to="/wishlist" aria-label={`Wishlist${wishlistCount ? `, ${wishlistCount} saved` : ''}`}>
-            <Heart size={19} strokeWidth={1.8} />
-            <span className="wishlist-count">{wishlistCount}</span>
+
+          {/* Wishlist */}
+          <Link to="/wishlist" aria-label={`Wishlist${wishlistCount ? `, ${wishlistCount} saved` : ''}`} className="header-action-btn">
+            <Heart size={20} strokeWidth={1.8} />
+            {wishlistCount > 0 && (
+              <motion.span
+                className="wishlist-count"
+                initial={{ scale: 0.6 }}
+                animate={{ scale: 1 }}
+                key={wishlistCount}
+              >
+                {wishlistCount}
+              </motion.span>
+            )}
           </Link>
-          <Link to="/cart" aria-label="Shopping cart">
-            <ShoppingBag size={19} strokeWidth={1.8} />
-            <span className="cart-count">{itemCount}</span>
+
+          {/* Cart */}
+          <Link to="/cart" aria-label="Shopping cart" className="header-action-btn header-cart-btn">
+            <ShoppingBag size={20} strokeWidth={1.8} />
+            {itemCount > 0 && (
+              <motion.span
+                className="cart-count"
+                initial={{ scale: 0.6 }}
+                animate={{ scale: 1 }}
+                key={itemCount}
+              >
+                {itemCount}
+              </motion.span>
+            )}
           </Link>
         </div>
       </div>
+
+      {/* Mobile Expandable Search Bar */}
+      <AnimatePresence>
+        {isMobileSearchOpen && (
+          <motion.div
+            className="mobile-search-bar"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <form onSubmit={handleSearchSubmit}>
+              <Search size={18} strokeWidth={1.8} />
+              <input
+                type="search"
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search cards, slabs, accessories..."
+              />
+              <button type="button" onClick={() => setIsMobileSearchOpen(false)}>
+                <X size={18} />
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Primary Navigation */}
       <nav className="primary-nav" aria-label="Primary navigation">
-        <div className="primary-nav-shop">
+        <div className="primary-nav-shop" ref={shopMenuRef}>
           <div className="primary-nav-link-group">
-            <NavLink to={shopItem.to} onClick={() => setIsShopMenuOpen(false)}>{shopItem.label}</NavLink>
-            <button type="button" className="nav-chevron" aria-label="Toggle Shop menu" aria-expanded={isShopMenuOpen} onClick={() => setIsShopMenuOpen((isOpen) => !isOpen)}>
-              <ChevronDown size={14} strokeWidth={1.8} />
+            <NavLink to={shopItem.to} onClick={() => setIsShopMenuOpen(false)}>
+              {shopItem.label}
+            </NavLink>
+            <button
+              type="button"
+              className="nav-chevron"
+              aria-label="Toggle Shop menu"
+              aria-expanded={isShopMenuOpen}
+              onClick={() => setIsShopMenuOpen((isOpen) => !isOpen)}
+            >
+              <ChevronDown
+                size={14}
+                strokeWidth={1.8}
+                style={{
+                  transform: isShopMenuOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.2s ease',
+                }}
+              />
             </button>
           </div>
           <AnimatePresence>
-            {isShopMenuOpen && <DesktopShopMenu items={shopItem.children ?? []} onNavigate={() => setIsShopMenuOpen(false)} />}
+            {isShopMenuOpen && (
+              <DesktopShopMenu
+                items={shopItem.children ?? []}
+                onNavigate={() => setIsShopMenuOpen(false)}
+              />
+            )}
           </AnimatePresence>
         </div>
-        {primaryItems.map((item) => <NavLink key={item.to} to={item.to}>{item.label}</NavLink>)}
+        {primaryItems.map((item) => (
+          <NavLink key={item.to} to={item.to}>
+            {item.label}
+          </NavLink>
+        ))}
       </nav>
+
+      {/* Mobile Navigation Drawer */}
       <AnimatePresence>
-        {isMobileMenuOpen && <MobileNavigation items={navigationItems} onClose={() => setIsMobileMenuOpen(false)} />}
+        {isMobileMenuOpen && (
+          <MobileNavigation
+            items={navigationItems}
+            search={search}
+            setSearch={setSearch}
+            onSearchSubmit={handleSearchSubmit}
+            onClose={() => setIsMobileMenuOpen(false)}
+            wishlistCount={wishlistCount}
+            itemCount={itemCount}
+          />
+        )}
       </AnimatePresence>
     </header>
   )
@@ -91,51 +240,116 @@ export function SiteHeader() {
 
 function DesktopShopMenu({ items, onNavigate }: { items: NavigationItem[]; onNavigate: () => void }) {
   return (
-    <motion.div 
+    <motion.div
       className="desktop-shop-menu"
-      initial={{ opacity: 0, y: -8 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      exit={{ opacity: 0, y: -8 }} 
-      transition={{ duration: 0.15 }}
+      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+      transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
     >
-      <p className="eyebrow">Browse the collection</p>
+      <p className="eyebrow">Browse by Collection</p>
       <div className="desktop-shop-links">
-        {items.map((item) => <NavLink key={item.to} to={item.to} onClick={onNavigate}>{item.label}</NavLink>)}
+        {items.map((item) => (
+          <NavLink key={item.to} to={item.to} onClick={onNavigate}>
+            {item.label}
+          </NavLink>
+        ))}
       </div>
     </motion.div>
   )
 }
 
-function MobileNavigation({ items, onClose }: { items: NavigationItem[]; onClose: () => void }) {
+type MobileNavigationProps = {
+  items: NavigationItem[]
+  search: string
+  setSearch: (value: string) => void
+  onSearchSubmit: (e: React.FormEvent) => void
+  onClose: () => void
+  wishlistCount: number
+  itemCount: number
+}
+
+function MobileNavigation({
+  items,
+  search,
+  setSearch,
+  onSearchSubmit,
+  onClose,
+  wishlistCount,
+  itemCount,
+}: MobileNavigationProps) {
   return (
-    <motion.div 
+    <motion.div
       className="mobile-navigation-layer"
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0 }} 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
     >
       <button className="mobile-navigation-backdrop" type="button" aria-label="Close navigation" onClick={onClose} />
-      <motion.aside 
-        className="mobile-navigation" 
+      <motion.aside
+        className="mobile-navigation"
         aria-label="Mobile navigation"
-        initial={{ x: '-100%' }} 
-        animate={{ x: 0 }} 
-        exit={{ x: '-100%' }} 
-        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        initial={{ x: '-100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '-100%' }}
+        transition={{ type: 'spring', damping: 28, stiffness: 320 }}
       >
         <div className="mobile-navigation-header">
-          <span className="wordmark"><img className="site-logo" src="/slabguardz_logo.png" alt="SlabGuardz" /></span>
-          <button type="button" aria-label="Close navigation" onClick={onClose}><X size={21} strokeWidth={1.8} /></button>
+          <span className="wordmark">
+            <img className="site-logo" src="/slabguardz_logo.png" alt="SlabGuardz" />
+          </span>
+          <button type="button" aria-label="Close navigation" onClick={onClose}>
+            <X size={22} strokeWidth={1.8} />
+          </button>
         </div>
+
+        {/* Search inside mobile drawer */}
+        <form className="mobile-drawer-search" onSubmit={(e) => { onSearchSubmit(e); onClose(); }}>
+          <Search size={18} strokeWidth={1.8} />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search cards, slabs, etc..."
+          />
+        </form>
+
         <nav className="mobile-navigation-links">
           {items.map((item) => (
-            <div key={item.to}>
-              <NavLink to={item.to} onClick={onClose}>{item.label}</NavLink>
-              {item.children && <div className="mobile-subnav">{item.children.slice(1).map((child) => <NavLink key={child.to} to={child.to} onClick={onClose}>{child.label}</NavLink>)}</div>}
+            <div key={item.to} className="mobile-nav-group">
+              <NavLink to={item.to} onClick={onClose} className="mobile-nav-parent">
+                {item.label}
+              </NavLink>
+              {item.children && (
+                <div className="mobile-subnav">
+                  {item.children.slice(1).map((child) => (
+                    <NavLink key={child.to} to={child.to} onClick={onClose}>
+                      {child.label}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </nav>
+
+        <div className="mobile-navigation-footer">
+          <div className="mobile-nav-shortcuts">
+            <Link to="/account" onClick={onClose} className="mobile-nav-shortcut">
+              <UserRound size={18} />
+              <span>Account</span>
+            </Link>
+            <Link to="/wishlist" onClick={onClose} className="mobile-nav-shortcut">
+              <Heart size={18} />
+              <span>Wishlist ({wishlistCount})</span>
+            </Link>
+            <Link to="/cart" onClick={onClose} className="mobile-nav-shortcut">
+              <ShoppingBag size={18} />
+              <span>Cart ({itemCount})</span>
+            </Link>
+          </div>
+        </div>
       </motion.aside>
     </motion.div>
   )

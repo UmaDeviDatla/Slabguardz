@@ -1,4 +1,4 @@
-import { motion, useInView, type Variants } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { useRef, type ReactNode } from 'react'
 
 type AnimateOnScrollProps = {
@@ -64,13 +64,4 @@ export function StaggerContainer({
       {children}
     </motion.div>
   )
-}
-
-export const staggerChildVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] as const },
-  },
 }

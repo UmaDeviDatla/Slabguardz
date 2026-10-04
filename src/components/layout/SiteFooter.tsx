@@ -38,12 +38,12 @@ export function SiteFooter() {
         <div className="footer-col">
           <h3 className="footer-heading">Shop</h3>
           <div className="footer-links">
-            <Link to="/shop">Shop</Link>
+            <Link to="/shop">Shop All</Link>
             <Link to="/best-sellers">Best Sellers</Link>
             <Link to="/new-arrivals">New Arrivals</Link>
-            <Link to="/shop/pokemon-cards">Pokemon Cards</Link>
-            <Link to="/shop/slabguardz-protection">SlabGuardz Protection</Link>
-            <Link to="/shop/accessories">Accessories</Link>
+            <Link to="/category/pokemon-cards">Pokemon Cards</Link>
+            <Link to="/category/slabguardz-protection">SlabGuardz Protection</Link>
+            <Link to="/category/accessories">Accessories</Link>
           </div>
         </div>
 
