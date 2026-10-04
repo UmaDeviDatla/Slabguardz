@@ -37,6 +37,7 @@ export type CartContextValue = {
 
   retry: () => void
   checkout: () => void
+  completeSuccessfulCheckout: (paymentId: string) => void
 
   addItem: (product: Product, quantity?: number) => void
   updateQuantity: (productId: string, quantity: number) => void

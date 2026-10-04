@@ -31,8 +31,23 @@ import {
 import { toMajorCurrencyAmount } from '../lib/hostingerApi'
 import type { Product } from '../data/products'
 
+const PENDING_CHECKOUT_KEY = 'slabguardz:pending-checkout'
+
+type CheckoutSnapshot = {
+  amount: number
+  currencyCode: string
+}
+
 function getCartErrorMessage(): string {
   return 'Something went wrong. Try again later.'
+}
+
+function getSuccessfulCheckoutPaymentId(): string | null {
+  if (typeof window === 'undefined') return null
+
+  const searchParams = new URLSearchParams(window.location.search)
+  if (searchParams.get('checkout') !== 'success') return null
+  return searchParams.get('razorpay_payment_id')?.trim() || null
 }
 
 function fallbackProduct(
@@ -65,8 +80,11 @@ export function CartProvider({
 }) {
   const { products } = useProductCatalogState()
 
+  const successfulReturnOnMount = getSuccessfulCheckoutPaymentId()
   const [cart, setCart] = useState<HostingerCart | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(
+    () => successfulReturnOnMount === null,
+  )
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [retryKey, setRetryKey] = useState(0)
@@ -78,10 +96,35 @@ export function CartProvider({
 
   const mutationQueue = useRef(Promise.resolve())
 
+  const completeSuccessfulCheckout = useCallback((paymentId: string) => {
+    const confirmationKey = `slabguardz:checkout-confirmation:${paymentId}`
+
+    try {
+      if (!sessionStorage.getItem(confirmationKey)) {
+        const pendingCheckout = sessionStorage.getItem(PENDING_CHECKOUT_KEY)
+        if (pendingCheckout) {
+          sessionStorage.setItem(confirmationKey, pendingCheckout)
+        }
+      }
+      sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
+    } catch (storageError) {
+      console.error('Unable to preserve checkout confirmation details.', storageError)
+    }
+
+    clearHostingerCartSession()
+    setCart(null)
+    setIsLoading(false)
+    setError(null)
+  }, [])
+
   /*
    * Load the existing Hostinger cart when the provider starts.
    */
   useEffect(() => {
+    if (successfulReturnOnMount) {
+      return
+    }
+
     const controller = new AbortController()
 
     getHostingerCart(controller.signal)
@@ -103,7 +146,7 @@ export function CartProvider({
       })
 
     return () => controller.abort()
-  }, [retryKey])
+  }, [retryKey, successfulReturnOnMount])
 
   /*
    * Queue cart mutations so multiple quick clicks
@@ -285,6 +328,22 @@ export function CartProvider({
       setError(null)
       setIsCheckoutLoading(true)
 
+      const checkoutSnapshot: CheckoutSnapshot = {
+        amount:
+          cart?.total ??
+          cart?.subtotal ??
+          lines.reduce((sum, line) => sum + line.lineTotal, 0),
+        currencyCode: cart?.currencyCode ?? lines[0]?.currencyCode ?? 'INR',
+      }
+      try {
+        sessionStorage.setItem(
+          PENDING_CHECKOUT_KEY,
+          JSON.stringify(checkoutSnapshot),
+        )
+      } catch (storageError) {
+        console.error('Unable to save checkout confirmation details.', storageError)
+      }
+
       void createHostingerCheckout(items)
         .then((checkoutUrl) => {
           window.location.assign(checkoutUrl)
@@ -359,6 +418,7 @@ export function CartProvider({
       },
 
       checkout,
+      completeSuccessfulCheckout,
 
       /*
        * Cart actions
@@ -385,6 +445,7 @@ export function CartProvider({
     }
   }, [
     cart,
+    completeSuccessfulCheckout,
     error,
     isDrawerOpen,
     isCheckoutLoading,

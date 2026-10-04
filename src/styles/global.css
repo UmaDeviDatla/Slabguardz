@@ -860,3 +860,24 @@ html[data-theme="night"] .help-dialog-backdrop { background: rgb(0 0 0 / 72%); }
     .theme-toggle { width: 36px; min-height: 36px; padding: 0; }
     .theme-toggle span { display: none; }
   }
+
+.order-confirmation-page { display: grid; justify-items: center; padding-block: clamp(var(--space-10), 9vw, var(--space-20)); }
+.confirmation-card { width: min(100%, 720px); border: 1px solid var(--color-line); border-radius: var(--radius-md); padding: clamp(var(--space-6), 6vw, var(--space-12)); background: var(--color-surface); box-shadow: var(--shadow-sm); text-align: center; }
+.confirmation-icon { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto var(--space-5); border-radius: 50%; color: var(--color-success); background: #edf7f2; }
+.confirmation-card h1 { margin: var(--space-3) 0 var(--space-2); font-family: var(--font-display); font-size: clamp(2.25rem, 7vw, 3.75rem); font-weight: 650; line-height: 1; letter-spacing: -.05em; }
+.confirmation-thanks { margin: var(--space-3) 0 0; font-size: var(--text-xl); font-weight: 600; }
+.confirmation-message { margin: var(--space-2) 0 0; color: var(--color-ink-muted); }
+.confirmation-details { display: grid; margin: var(--space-8) 0 0; border: 1px solid var(--color-line); border-radius: var(--radius-sm); text-align: left; }
+.confirmation-detail { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-5); }
+.confirmation-detail + .confirmation-detail { border-top: 1px solid var(--color-line); }
+.confirmation-detail dt { color: var(--color-ink-muted); font-size: var(--text-sm); }
+.confirmation-detail dd { max-width: 65%; margin: 0; font-size: var(--text-sm); font-weight: 650; text-align: right; overflow-wrap: anywhere; }
+.confirmation-detail.confirmation-amount dd { font-size: var(--text-lg); }
+.confirmation-paid { color: var(--color-success); }
+.confirmation-email-note { margin: var(--space-6) auto 0; color: var(--color-ink-muted); font-size: var(--text-sm); }
+.confirmation-card > .button { margin-top: var(--space-6); }
+
+@media (max-width: 520px) {
+  .confirmation-detail { flex-direction: column; gap: var(--space-1); padding: var(--space-4); }
+  .confirmation-detail dd { max-width: 100%; text-align: left; }
+}
