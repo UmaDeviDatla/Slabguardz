@@ -56,7 +56,7 @@ export function AboutPage() {
           <div className="about-narrative-grid">
             <AnimateOnScroll>
               <div className="about-narrative-image-wrap">
-                <img src="/pokemon_banner.jpeg" alt="SlabGuardz collector showcase" />
+                <img src="/slabs/slab-1.jpeg" alt="SlabGuardz precision protection on graded Pokémon slab" />
                 <div className="about-narrative-badge">
                   <span>EST. 2024</span>
                   <strong>BRED FOR COLLECTORS</strong>

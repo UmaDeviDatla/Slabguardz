@@ -1,18 +1,20 @@
 :root {
-  --color-ink: #171513;
-  --color-ink-muted: #625d56;
-  --color-ink-subtle: #8b847c;
+  --color-ink: #0f172a;
+  --color-ink-muted: #475569;
+  --color-ink-subtle: #94a3b8;
   --color-surface: #ffffff;
-  --color-surface-soft: #f5f3ef;
-  --color-canvas: #fdfcfa;
-  --color-line: #e2ded7;
-  --color-line-strong: #c8c1b8;
+  --color-surface-soft: #f8fafc;
+  --color-canvas: #ffffff;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
   --color-accent: #ff6b22;
-  --color-accent-hover: #e95710;
-  --color-accent-soft: #fff0e8;
+  --color-accent-hover: #ea580c;
+  --color-accent-soft: #fff7ed;
   --color-accent-gradient: linear-gradient(135deg, #ff6b22 0%, #ff8f4f 100%);
-  --color-success: #287257;
-  --color-danger: #a74343;
+  --color-dark: #0f172a;
+  --color-dark-hover: #1e293b;
+  --color-success: #15803d;
+  --color-danger: #b91c1c;
 
   --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Outfit", ui-sans-serif, system-ui, -apple-system, sans-serif;

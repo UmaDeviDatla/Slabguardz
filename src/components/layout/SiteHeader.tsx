@@ -1,16 +1,14 @@
-import { ChevronDown, Heart, Menu, Moon, Search, ShoppingBag, Sun, UserRound, X } from 'lucide-react'
+import { ChevronDown, Heart, Menu, Search, ShoppingBag, UserRound, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { navigationItems, type NavigationItem } from '../../data/navigation'
 import { useCart } from '../../hooks/useCart'
 import { useWishlist } from '../../hooks/useWishlist'
-import { useTheme } from '../../hooks/useTheme'
 
 export function SiteHeader() {
   const { itemCount } = useCart()
   const { count: wishlistCount } = useWishlist()
-  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -122,18 +120,6 @@ export function SiteHeader() {
             onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
           >
             <Search size={20} strokeWidth={1.8} />
-          </button>
-
-          {/* Theme Toggle */}
-          <button
-            className="theme-toggle"
-            type="button"
-            aria-label={theme === 'day' ? 'Switch to dark theme' : 'Switch to light theme'}
-            aria-pressed={theme === 'night'}
-            onClick={toggleTheme}
-          >
-            {theme === 'day' ? <Sun size={17} strokeWidth={1.8} /> : <Moon size={17} strokeWidth={1.8} />}
-            <span>{theme === 'day' ? 'Day' : 'Night'}</span>
           </button>
 
           {/* Account */}
