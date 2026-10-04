@@ -56,6 +56,25 @@ export function SiteHeader() {
     }
   }
 
+  const [istTime, setIstTime] = useState('')
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date()
+      const formatter = new Intl.DateTimeFormat('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      })
+      setIstTime(formatter.format(now).toUpperCase())
+    }
+    updateTime()
+    const timer = setInterval(updateTime, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
   const shopItem = navigationItems[0]
   const primaryItems = navigationItems.slice(1)
 
@@ -63,6 +82,7 @@ export function SiteHeader() {
     <header className="site-header-wrap">
       <div className="announcement-bar">
         <span>Free India-wide express shipping on orders over ₹1,499 · 100% Authentic Collectibles</span>
+        {istTime && <span className="header-ist-clock">IST {istTime}</span>}
       </div>
       <div className="site-header">
         <button
