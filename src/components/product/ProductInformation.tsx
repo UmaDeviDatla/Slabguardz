@@ -180,7 +180,7 @@ export function ProductInformation({ product }: ProductInformationProps) {
                 <div className="shipping-card">
                   <Truck size={24} className="shipping-card-icon" />
                   <h4>India-wide Express Delivery</h4>
-                  <p>Dispatched within 24-48 business hours via trusted courier partners (Delhivery, BlueDart, DTDC). Real-time tracking link sent via SMS and email.</p>
+                  <p>Dispatched within 24-48 business hours via trusted courier partners (Delhivery, BlueDart, DTDC). Free shipping on orders over ₹1,499 (flat ₹99 below ₹1,499). Real-time tracking link sent via SMS and email.</p>
                 </div>
                 <div className="shipping-card">
                   <Shield size={24} className="shipping-card-icon" />

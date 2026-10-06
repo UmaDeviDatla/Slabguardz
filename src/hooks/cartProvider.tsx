@@ -32,10 +32,25 @@ import { toMajorCurrencyAmount } from '../lib/hostingerApi'
 import type { Product } from '../data/products'
 
 const PENDING_CHECKOUT_KEY = 'slabguardz:pending-checkout'
+export const FREE_SHIPPING_THRESHOLD = 1499
+export const STANDARD_SHIPPING_FEE = 99
 
-type CheckoutSnapshot = {
+export type CheckoutItemSnapshot = {
+  name: string
+  quantity: number
+  price: number
+  image?: string
+}
+
+export type CheckoutSnapshot = {
   amount: number
+  subtotal: number
+  shippingFee: number
+  taxTotal: number
   currencyCode: string
+  itemCount: number
+  items: CheckoutItemSnapshot[]
+  date?: string
 }
 
 function getCartErrorMessage(): string {
@@ -104,6 +119,7 @@ export function CartProvider({
         const pendingCheckout = sessionStorage.getItem(PENDING_CHECKOUT_KEY)
         if (pendingCheckout) {
           sessionStorage.setItem(confirmationKey, pendingCheckout)
+          sessionStorage.setItem('slabguardz:latest-checkout-confirmation', pendingCheckout)
         }
       }
       sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
@@ -328,12 +344,39 @@ export function CartProvider({
       setError(null)
       setIsCheckoutLoading(true)
 
+      const orderSubtotal =
+        cart?.subtotal ??
+        lines.reduce((sum, line) => sum + line.lineTotal, 0)
+
+      const orderShipping =
+        orderSubtotal === 0
+          ? 0
+          : orderSubtotal >= FREE_SHIPPING_THRESHOLD
+            ? 0
+            : (cart?.shippingTotal && cart.shippingTotal > 0
+                ? cart.shippingTotal
+                : STANDARD_SHIPPING_FEE)
+
+      const orderTax = cart?.taxTotal ?? 0
+      const orderTotal =
+        cart?.total && cart.total > orderSubtotal
+          ? cart.total
+          : orderSubtotal + orderShipping + orderTax
+
       const checkoutSnapshot: CheckoutSnapshot = {
-        amount:
-          cart?.total ??
-          cart?.subtotal ??
-          lines.reduce((sum, line) => sum + line.lineTotal, 0),
+        amount: orderTotal,
+        subtotal: orderSubtotal,
+        shippingFee: orderShipping,
+        taxTotal: orderTax,
         currencyCode: cart?.currencyCode ?? lines[0]?.currencyCode ?? 'INR',
+        itemCount: lines.reduce((total, line) => total + line.quantity, 0),
+        items: lines.map((line) => ({
+          name: line.product.name,
+          quantity: line.quantity,
+          price: line.unitPrice,
+          image: line.product.image,
+        })),
+        date: new Date().toISOString(),
       }
       try {
         sessionStorage.setItem(
@@ -355,6 +398,29 @@ export function CartProvider({
           setIsCheckoutLoading(false)
         })
     }
+
+    const calculatedSubtotal =
+      cart?.subtotal ??
+      lines.reduce(
+        (total, line) => total + line.lineTotal,
+        0,
+      )
+
+    const calculatedShipping =
+      calculatedSubtotal === 0
+        ? 0
+        : calculatedSubtotal >= FREE_SHIPPING_THRESHOLD
+          ? 0
+          : (cart?.shippingTotal && cart.shippingTotal > 0
+              ? cart.shippingTotal
+              : STANDARD_SHIPPING_FEE)
+
+    const calculatedTax = cart?.taxTotal ?? 0
+
+    const calculatedTotal =
+      cart?.total && cart.total > calculatedSubtotal
+        ? cart.total
+        : calculatedSubtotal + calculatedShipping + calculatedTax
 
     return {
       /*
@@ -380,24 +446,13 @@ export function CartProvider({
       /*
        * Hostinger totals
        */
-      subtotal:
-        cart?.subtotal ??
-        lines.reduce(
-          (total, line) => total + line.lineTotal,
-          0,
-        ),
+      subtotal: calculatedSubtotal,
 
-      shippingTotal: cart?.shippingTotal ?? 0,
+      shippingTotal: calculatedShipping,
 
-      taxTotal: cart?.taxTotal ?? 0,
+      taxTotal: calculatedTax,
 
-      total:
-        cart?.total ??
-        cart?.subtotal ??
-        lines.reduce(
-          (total, line) => total + line.lineTotal,
-          0,
-        ),
+      total: calculatedTotal,
 
       currencyCode: cart?.currencyCode ?? 'INR',
 

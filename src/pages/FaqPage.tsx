@@ -56,7 +56,7 @@ const faqs: FaqItem[] = [
     id: 'f7',
     category: 'shipping',
     question: 'Is shipping free?',
-    answer: 'Yes! We provide Free India-wide Express Delivery on all orders valued at ₹1,499 and above. For orders under ₹1,499, a nominal flat courier fee is calculated transparently during checkout.',
+    answer: 'Yes! We provide Free India-wide Express Delivery on all orders valued at ₹1,499 and above. For orders below ₹1,499, a flat shipping fee of ₹99 applies anywhere in India.',
   },
   {
     id: 'f8',

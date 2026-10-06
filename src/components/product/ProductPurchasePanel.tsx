@@ -127,7 +127,7 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
       </div>
 
       <p className="product-purchase-note">
-        Taxes and shipping calculated at checkout. Free shipping on all orders over ₹1,499.
+        Free India-wide express shipping on orders over ₹1,499 · Flat ₹99 below ₹1,499.
       </p>
 
       {/* Trust Badges Bar */}

@@ -79,7 +79,7 @@ export function SiteHeader() {
   return (
     <header className="site-header-wrap">
       <div className="announcement-bar">
-        <span>Free India-wide express shipping on orders over ₹1,499 · 100% Authentic Collectibles</span>
+        <span>Free India-wide express shipping on orders over ₹1,499 (Flat ₹99 below ₹1,499) · 100% Authentic Collectibles</span>
         {istTime && <span className="header-ist-clock">IST {istTime}</span>}
       </div>
       <div className="site-header">

@@ -6,32 +6,49 @@ import { useCart } from '../hooks/useCart'
 
 export function CartPage() {
   const [searchParams] = useSearchParams()
-  const paymentId = searchParams.get('razorpay_payment_id')?.trim()
-  const isSuccessfulReturn =
-    searchParams.get('checkout') === 'success' && Boolean(paymentId)
+  const razorpayPaymentId = searchParams.get('razorpay_payment_id')?.trim()
+  const orderId = searchParams.get('order_id')?.trim() || searchParams.get('payment_id')?.trim()
+  const isCheckoutSuccess = searchParams.get('checkout') === 'success'
+
   const navigate = useNavigate()
   const { completeSuccessfulCheckout } = useCart()
 
   useEffect(() => {
-    if (!isSuccessfulReturn || !paymentId) return
+    if (!isCheckoutSuccess) return
 
-    completeSuccessfulCheckout(paymentId)
+    const effectivePaymentId =
+      razorpayPaymentId ||
+      orderId ||
+      `SG-PAY-${Date.now().toString(36).toUpperCase()}`
+
+    completeSuccessfulCheckout(effectivePaymentId)
+    const targetParams = new URLSearchParams()
+    targetParams.set('razorpay_payment_id', effectivePaymentId)
+    if (orderId) {
+      targetParams.set('order_id', orderId)
+    }
+
     navigate(
-      `/order-confirmation?razorpay_payment_id=${encodeURIComponent(paymentId)}`,
+      `/order-confirmation?${targetParams.toString()}`,
       { replace: true },
     )
-  }, [completeSuccessfulCheckout, isSuccessfulReturn, navigate, paymentId])
+  }, [completeSuccessfulCheckout, isCheckoutSuccess, navigate, orderId, razorpayPaymentId])
 
-  if (isSuccessfulReturn) {
+  if (isCheckoutSuccess) {
     return (
       <Container className="cart-page">
         <div className="cart-empty" role="status">
           <p className="eyebrow">Payment received</p>
-          <h1>Confirming your payment.</h1>
+          <h1>Confirming your payment...</h1>
+          <p>Redirecting to your order confirmation receipt.</p>
         </div>
       </Container>
     )
   }
 
-  return <Container className="cart-page"><CartPageContent /></Container>
+  return (
+    <Container className="cart-page">
+      <CartPageContent />
+    </Container>
+  )
 }

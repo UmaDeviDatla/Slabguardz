@@ -34,8 +34,8 @@ export function CartSummary({ compact = false }: CartSummaryProps) {
           <Truck size={16} className="shipping-progress-icon" />
           <span>
             {amountNeeded > 0
-              ? `Add ${formatPrice(amountNeeded, currencyCode)} for FREE shipping`
-              : 'You have unlocked FREE shipping!'}
+              ? `Add ${formatPrice(amountNeeded, currencyCode)} for FREE shipping (Save ₹99)`
+              : '🎉 You have unlocked FREE Express Shipping!'}
           </span>
         </div>
         <div className="shipping-progress-bar-bg">
@@ -56,11 +56,23 @@ export function CartSummary({ compact = false }: CartSummaryProps) {
       <div className="cart-summary-line">
         <span>Shipping</span>
         <strong>
-          {shippingTotal === 0 || subtotal >= FREE_SHIPPING_THRESHOLD
-            ? 'Free'
-            : formatPrice(shippingTotal, currencyCode)}
+          {subtotal === 0
+            ? '₹0.00'
+            : subtotal >= FREE_SHIPPING_THRESHOLD
+              ? 'Free'
+              : formatPrice(shippingTotal || 99, currencyCode)}
         </strong>
       </div>
+      {subtotal > 0 && subtotal < FREE_SHIPPING_THRESHOLD && (
+        <p className="cart-shipping-hint">
+          Flat ₹99 courier · Free on orders over {formatPrice(FREE_SHIPPING_THRESHOLD, currencyCode)}
+        </p>
+      )}
+      {subtotal >= FREE_SHIPPING_THRESHOLD && (
+        <p className="cart-shipping-hint cart-shipping-hint-free">
+          ✓ Free Express Shipping Applied
+        </p>
+      )}
 
       <div className="cart-summary-line">
         <span>Estimated GST</span>
