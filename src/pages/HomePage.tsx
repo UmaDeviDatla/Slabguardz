@@ -17,7 +17,13 @@ export function HomePage() {
     <>
       <HeroSection />
       <BrandStatement />
-      <ProductSection eyebrow="The edit" title="Featured products" description="A considered starting point for your next addition." products={products.slice(0, 3)} linkTo="/shop" />
+      <ProductSection
+        eyebrow="Curated For Collectors"
+        title="HOT & TRENDING"
+        description={<>FOR YOUR <strong>COLLECTION</strong></>}
+        products={products.slice(0, 3)}
+        linkTo="/shop"
+      />
       <CategoryGridSection />
       <ProductSection eyebrow="Just in" title="New arrivals" description="Fresh cards and essentials for the collection." products={newArrivals.length ? newArrivals.slice(0, 3) : products.slice(0, 3)} linkTo="/new-arrivals" />
       <ProtectionSection />

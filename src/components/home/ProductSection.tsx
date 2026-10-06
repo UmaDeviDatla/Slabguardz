@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -12,7 +13,7 @@ import { staggerChildVariants } from '../ui/animationVariants'
 type ProductSectionProps = {
   eyebrow: string
   title: string
-  description: string
+  description: ReactNode
   products: Product[]
   linkTo: string
   collectionCount?: number

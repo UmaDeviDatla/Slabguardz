@@ -76,8 +76,9 @@ main { flex: 1; }
 .button-quiet:hover { background: var(--color-accent-soft); }
 
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: var(--space-6); margin-bottom: var(--space-8); }
-.section-heading h2 { margin: var(--space-2) 0 0; font-size: var(--text-2xl); font-weight: 650; letter-spacing: -.03em; }
-.section-description { max-width: 500px; margin: var(--space-3) 0 0; color: var(--color-ink-muted); }
+.section-heading h2 { margin: var(--space-2) 0 0; font-family: var(--font-heading); font-size: clamp(2.2rem, 5vw, 3.25rem); font-weight: 900; letter-spacing: -0.025em; text-transform: uppercase; color: var(--color-ink); line-height: 1.05; }
+.section-description { max-width: 540px; margin: var(--space-2) 0 0; font-family: var(--font-heading); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-muted); }
+.section-description strong { color: var(--color-accent); font-weight: 900; }
 .section-heading-action { flex: 0 0 auto; }
 .badge { display: inline-flex; align-items: center; min-height: 24px; border-radius: var(--radius-pill); padding: 0 var(--space-3); font-size: var(--text-xs); font-weight: 650; line-height: 1; text-transform: capitalize; }
 .badge-neutral { color: var(--color-ink-muted); background: var(--color-surface-soft); }
@@ -100,9 +101,11 @@ main { flex: 1; }
   transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
 }
 .product-card:hover {
-  transform: translateY(-3px);
-  border-color: rgb(255 107 34 / 70%);
-  box-shadow: 0 18px 34px rgb(20 20 20 / 12%);
+  transform: translateY(-6px) scale(1.025);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent),
+              0 16px 36px -6px rgba(255, 107, 34, 0.32),
+              0 6px 16px rgba(0, 0, 0, 0.06);
 }
 .product-card-media {
   position: relative;
@@ -132,7 +135,7 @@ main { flex: 1; }
   object-position: center;
   transition: transform var(--transition-standard);
 }
-.product-card:hover .product-card-media img { transform: scale(1.03); }
+.product-card:hover .product-card-media img { transform: scale(1.08); }
 .product-card-wishlist {
   position: absolute;
   top: var(--space-3);
@@ -801,9 +804,9 @@ body { background: var(--color-canvas); }
 .button-primary { color: #0b0b0b; font-weight: 800; }
 .button-secondary { border-color: var(--color-line-strong); background: transparent; }
 .button-secondary:hover { color: var(--color-ink); background: var(--color-accent); }
-.section-heading h2, .cart-items-heading h1, .cart-empty h1 { font-weight: 800; text-transform: uppercase; }
+.section-heading h2, .cart-items-heading h1, .cart-empty h1 { font-family: var(--font-heading); font-weight: 900; letter-spacing: -0.025em; text-transform: uppercase; }
 .product-card { overflow: hidden; border: 1px solid var(--color-line); border-radius: var(--radius-md); background: var(--color-surface); transition: border-color var(--transition-standard), transform var(--transition-standard), box-shadow var(--transition-standard); }
-.product-card:hover { border-color: rgb(255 107 34 / 70%); box-shadow: 0 14px 36px rgb(0 0 0 / 25%); transform: translateY(-4px); }
+.product-card:hover { border-color: var(--color-accent); box-shadow: 0 0 0 2px var(--color-accent), 0 16px 36px -6px rgba(255, 107, 34, 0.32); transform: translateY(-6px) scale(1.025); }
 .product-card-media { border: 0; border-radius: 0; background: var(--color-surface-soft); }
 .product-card-media img { object-fit: contain; padding: 10%; }
 .product-card-wishlist { border-color: var(--color-line-strong); color: var(--color-ink); background: rgb(9 9 9 / 78%); }
@@ -2948,20 +2951,26 @@ html, body, #root, .storefront-shell, main, .home-page, .container, .collection-
 }
 
 .graded-product-card {
+  position: relative;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1.5px solid #e2e8f0;
   border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  will-change: transform, box-shadow;
 }
 
 .graded-product-card:hover {
-  transform: translateY(-4px);
-  border-color: #cbd5e1;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-6px) scale(1.025);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent),
+              0 18px 38px -6px rgba(255, 107, 34, 0.35),
+              0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
 .graded-card-img-wrap {
@@ -2987,11 +2996,12 @@ html, body, #root, .storefront-shell, main, .home-page, .container, .collection-
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
 .graded-product-card:hover .graded-card-img {
-  transform: scale(1.05);
+  transform: scale(1.085);
 }
 
 .graded-badge-pill {
@@ -3026,6 +3036,7 @@ html, body, #root, .storefront-shell, main, .home-page, .container, .collection-
 }
 
 .graded-card-name {
+  font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 800;
   color: #0f172a;
