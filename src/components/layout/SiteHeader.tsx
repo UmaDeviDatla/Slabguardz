@@ -14,6 +14,7 @@ export function SiteHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false)
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
+  const [showFloatingSearch, setShowFloatingSearch] = useState(true)
   const shopMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -79,7 +80,12 @@ export function SiteHeader() {
   return (
     <header className="site-header-wrap">
       <div className="announcement-bar">
-        <span>Free India-wide express shipping on orders over ₹1,499 (Flat ₹99 below ₹1,499) · 100% Authentic Collectibles</span>
+        <span className="announcement-desktop">
+          Free India-wide express shipping on orders over ₹1,499 (Flat ₹99 below ₹1,499) · 100% Authentic Collectibles
+        </span>
+        <span className="announcement-mobile">
+          Free express shipping over ₹1,499 (Flat ₹99 below) · 100% Authentic
+        </span>
         {istTime && <span className="header-ist-clock">IST {istTime}</span>}
       </div>
       <div className="site-header">
@@ -95,6 +101,9 @@ export function SiteHeader() {
 
         <Link className="wordmark" to="/" aria-label="SlabGuardz home">
           <img className="site-logo" src="/slabguardz_logo.png" alt="SlabGuardz" />
+          <span className="mobile-logo-text">
+            SlabGuardz<span className="brand-reg">®</span>
+          </span>
         </Link>
 
         {/* Desktop Search Bar */}
@@ -143,18 +152,16 @@ export function SiteHeader() {
           </Link>
 
           {/* Cart */}
-          <Link to="/cart" aria-label="Shopping cart" className="header-action-btn header-cart-btn">
-            <ShoppingBag size={20} strokeWidth={1.8} />
-            {itemCount > 0 && (
-              <motion.span
-                className="cart-count"
-                initial={{ scale: 0.6 }}
-                animate={{ scale: 1 }}
-                key={itemCount}
-              >
-                {itemCount}
-              </motion.span>
-            )}
+          <Link to="/cart" aria-label={`Shopping cart with ${itemCount} items`} className="header-action-btn header-cart-btn">
+            <ShoppingBag size={21} strokeWidth={1.8} />
+            <motion.span
+              className="cart-count"
+              initial={{ scale: 0.6 }}
+              animate={{ scale: 1 }}
+              key={itemCount}
+            >
+              {itemCount}
+            </motion.span>
           </Link>
         </div>
       </div>
@@ -240,6 +247,39 @@ export function SiteHeader() {
           />
         )}
       </AnimatePresence>
+
+      {/* GradedGuard-style Mobile Floating Search Pill */}
+      <AnimatePresence>
+        {showFloatingSearch && (
+          <motion.div
+            className="graded-floating-search-pill"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.25 }}
+          >
+            <button
+              type="button"
+              className="floating-search-action"
+              onClick={() => {
+                setIsMobileMenuOpen(true)
+              }}
+              aria-label="Search collection"
+            >
+              <Search size={16} strokeWidth={2} />
+              <span>I'm looking for...</span>
+            </button>
+            <button
+              type="button"
+              className="floating-search-close"
+              onClick={() => setShowFloatingSearch(false)}
+              aria-label="Dismiss search pill"
+            >
+              <X size={14} strokeWidth={2.4} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 }
@@ -302,9 +342,11 @@ function MobileNavigation({
         transition={{ type: 'spring', damping: 28, stiffness: 320 }}
       >
         <div className="mobile-navigation-header">
-          <span className="wordmark">
-            <img className="site-logo" src="/slabguardz_logo.png" alt="SlabGuardz" />
-          </span>
+          <Link to="/" onClick={onClose} className="wordmark" aria-label="SlabGuardz home">
+            <span className="mobile-logo-text">
+              SlabGuardz<span className="brand-reg">®</span>
+            </span>
+          </Link>
           <button type="button" aria-label="Close navigation" onClick={onClose}>
             <X size={22} strokeWidth={1.8} />
           </button>
