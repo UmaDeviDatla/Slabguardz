@@ -60,7 +60,9 @@ export function CartSummary({ compact = false }: CartSummaryProps) {
             ? '₹0.00'
             : subtotal >= FREE_SHIPPING_THRESHOLD
               ? 'Free'
-              : formatPrice(shippingTotal || 99, currencyCode)}
+              : shippingTotal > 0
+                ? formatPrice(shippingTotal, currencyCode)
+                : 'Calculated at checkout'}
         </strong>
       </div>
       {subtotal > 0 && subtotal < FREE_SHIPPING_THRESHOLD && (

@@ -135,12 +135,14 @@ export function OrderConfirmationPage() {
   }
 
   const currencyCode = snapshot?.currencyCode ?? 'INR'
-  const subtotal = snapshot?.subtotal ?? (snapshot?.amount ? Math.max(0, snapshot.amount - (snapshot.amount >= 1499 ? 0 : 99)) : 0)
-  const shippingFee = snapshot?.shippingFee !== undefined
-    ? snapshot.shippingFee
-    : (subtotal >= 1499 ? 0 : 99)
+  const itemsSubtotal = snapshot?.items?.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const subtotal = snapshot?.subtotal ?? itemsSubtotal ?? snapshot?.amount ?? 0
+  const shippingFee = snapshot?.shippingFromHostinger ? (snapshot.shippingFee ?? 0) : 0
   const taxTotal = snapshot?.taxTotal ?? 0
-  const totalAmount = snapshot?.amount ?? (subtotal + shippingFee + taxTotal)
+  const totalAmount =
+    snapshot?.shippingFromHostinger && snapshot?.amount
+      ? snapshot.amount
+      : subtotal + shippingFee + taxTotal
   const orderDateFormatted = formatOrderDateTime(snapshot?.date)
 
   return (
@@ -282,7 +284,9 @@ export function OrderConfirmationPage() {
                 <span>Shipping Fee</span>
                 <span>
                   {shippingFee === 0 ? (
-                    <strong className="text-free-shipping">FREE (Order ₹1,499+)</strong>
+                    <strong className="text-free-shipping">
+                      {subtotal >= 1499 ? 'FREE (Order ₹1,499+)' : 'Free'}
+                    </strong>
                   ) : (
                     formatPrice(shippingFee, currencyCode)
                   )}

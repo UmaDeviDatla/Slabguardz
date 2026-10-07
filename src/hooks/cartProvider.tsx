@@ -46,6 +46,7 @@ export type CheckoutSnapshot = {
   amount: number
   subtotal: number
   shippingFee: number
+  shippingFromHostinger?: boolean
   taxTotal: number
   currencyCode: string
   itemCount: number
@@ -349,17 +350,13 @@ export function CartProvider({
         lines.reduce((sum, line) => sum + line.lineTotal, 0)
 
       const orderShipping =
-        orderSubtotal === 0
+        orderSubtotal === 0 || orderSubtotal >= FREE_SHIPPING_THRESHOLD
           ? 0
-          : orderSubtotal >= FREE_SHIPPING_THRESHOLD
-            ? 0
-            : (cart?.shippingTotal && cart.shippingTotal > 0
-                ? cart.shippingTotal
-                : STANDARD_SHIPPING_FEE)
+          : (cart?.shippingTotal ?? 0)
 
       const orderTax = cart?.taxTotal ?? 0
       const orderTotal =
-        cart?.total && cart.total > orderSubtotal
+        cart?.total && cart.total >= orderSubtotal
           ? cart.total
           : orderSubtotal + orderShipping + orderTax
 
@@ -367,6 +364,7 @@ export function CartProvider({
         amount: orderTotal,
         subtotal: orderSubtotal,
         shippingFee: orderShipping,
+        shippingFromHostinger: Boolean(cart?.shippingTotal && cart.shippingTotal > 0),
         taxTotal: orderTax,
         currencyCode: cart?.currencyCode ?? lines[0]?.currencyCode ?? 'INR',
         itemCount: lines.reduce((total, line) => total + line.quantity, 0),
@@ -407,18 +405,14 @@ export function CartProvider({
       )
 
     const calculatedShipping =
-      calculatedSubtotal === 0
+      calculatedSubtotal === 0 || calculatedSubtotal >= FREE_SHIPPING_THRESHOLD
         ? 0
-        : calculatedSubtotal >= FREE_SHIPPING_THRESHOLD
-          ? 0
-          : (cart?.shippingTotal && cart.shippingTotal > 0
-              ? cart.shippingTotal
-              : STANDARD_SHIPPING_FEE)
+        : (cart?.shippingTotal ?? 0)
 
     const calculatedTax = cart?.taxTotal ?? 0
 
     const calculatedTotal =
-      cart?.total && cart.total > calculatedSubtotal
+      cart?.total && cart.total >= calculatedSubtotal
         ? cart.total
         : calculatedSubtotal + calculatedShipping + calculatedTax
 
