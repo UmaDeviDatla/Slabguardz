@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Product, ProductCategory } from '../data/products'
 import type { SortOption } from '../data/shop'
 
-const PAGE_SIZE = 4
+const PAGE_SIZE = 12
 
 type UseProductCatalogOptions = {
   products: Product[]
@@ -18,9 +18,11 @@ export function useProductCatalog({ products, category, search, sort }: UseProdu
   const filteredProducts = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
     const matchingProducts = products.filter((product) => {
-      const categories = product.categories && product.categories.length > 0 ? product.categories : [product.category]
-      const matchesCategory = category === 'all' || categories.includes(category)
-      const searchableText = `${product.name} ${categories.join(' ')} ${product.category}`.toLowerCase()
+      const assignedCategories = Array.isArray(product.categories)
+        ? product.categories
+        : [product.category]
+      const matchesCategory = category === 'all' || assignedCategories.includes(category)
+      const searchableText = `${product.name} ${assignedCategories.join(' ')} ${product.category}`.toLowerCase()
       return matchesCategory && (!normalizedSearch || searchableText.includes(normalizedSearch))
     })
 
