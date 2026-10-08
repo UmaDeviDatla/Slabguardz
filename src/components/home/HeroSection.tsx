@@ -3,42 +3,14 @@ import {
   ShieldCheck,
   Check,
   ShoppingBag,
-  ChevronLeft,
-  ChevronRight,
-  Pause,
-  Play,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
 import { ButtonLink } from '../ui/Button'
 import { useProductCatalogState } from '../../hooks/useProductCatalogState'
 import { PriceDisplay } from '../ui/PriceDisplay'
 import { useCart } from '../../hooks/useCart'
-
-const heroBannerSlides = [
-  {
-    id: 'banner-1',
-    image: '/banners/banner-1.jpg',
-    tag: 'SHOW EXCLUSIVE',
-    title: 'Precision Slab Armor & Grail Collection',
-    link: '/shop',
-  },
-  {
-    id: 'banner-2',
-    image: '/banners/banner-2.jpg',
-    tag: 'NEW EDITION',
-    title: 'Crystal Stackable Cases & TPU Bumpers',
-    link: '/category/slabguardz-protection',
-  },
-  {
-    id: 'banner-3',
-    image: '/banners/banner-3.jpg',
-    tag: 'COLLECTOR SERIES',
-    title: 'Engineered for PSA, BGS & CGC Slabs',
-    link: '/shop',
-  },
-]
 
 const heroQuickFilters = [
   { label: 'All Products', to: '/shop' },
@@ -74,25 +46,6 @@ export function HeroSection() {
   const { products } = useProductCatalogState()
   const { addItem } = useCart()
   const [addedId, setAddedId] = useState<string | null>(null)
-  const [activeSlide, setActiveSlide] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
-
-  // Auto-advance banner slides every 5 seconds unless paused
-  useEffect(() => {
-    if (isPaused) return
-    const timer = window.setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % heroBannerSlides.length)
-    }, 5000)
-    return () => window.clearInterval(timer)
-  }, [isPaused])
-
-  const handlePrevSlide = () => {
-    setActiveSlide((prev) => (prev - 1 + heroBannerSlides.length) % heroBannerSlides.length)
-  }
-
-  const handleNextSlide = () => {
-    setActiveSlide((prev) => (prev + 1) % heroBannerSlides.length)
-  }
 
   // Exactly 3 products per row matching the category section
   const spotlightProducts = products.length > 0 ? products.slice(0, 3) : []
@@ -103,83 +56,23 @@ export function HeroSection() {
     setTimeout(() => setAddedId(null), 1600)
   }
 
-  const currentBanner = heroBannerSlides[activeSlide]
-
   return (
     <section className="graded-hero" aria-label="SlabGuardz Graded Card Protection">
-      {/* GradedGuard-Style Full Quality Uncropped Hero Banner Slideshow */}
+      {/* Fixed High-Resolution Hero Banner (Uncropped) */}
       <div className="gg-hero-banner-wrapper">
         <div className="gg-hero-banner-stage">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentBanner.id}
-              className="gg-hero-slide"
-              initial={{ opacity: 0.25 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0.25 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-            >
-              <Link to={currentBanner.link} className="gg-hero-slide-link" aria-label={currentBanner.title}>
-                <img
-                  src={currentBanner.image}
-                  alt={currentBanner.title}
-                  className="gg-hero-banner-img"
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="sync"
-                />
-                <span className="gg-hero-exclusive-badge">{currentBanner.tag}</span>
-              </Link>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* GradedGuard-Style Slideshow Controls Bar */}
-        <div className="gg-hero-slider-controls" aria-label="Banner slideshow controls">
-          <button
-            type="button"
-            className="gg-slider-arrow"
-            onClick={handlePrevSlide}
-            aria-label="Previous banner slide"
-          >
-            <ChevronLeft size={18} strokeWidth={1.8} />
-          </button>
-
-          <div className="gg-slider-dots" role="tablist" aria-label="Choose banner slide">
-            {heroBannerSlides.map((slide, index) => (
-              <button
-                key={slide.id}
-                type="button"
-                role="tab"
-                aria-selected={index === activeSlide}
-                aria-label={`Slide ${index + 1} of ${heroBannerSlides.length}`}
-                className={`gg-slider-dot${index === activeSlide ? ' is-active' : ''}`}
-                onClick={() => setActiveSlide(index)}
+          <div className="gg-hero-slide">
+            <Link to="/shop" className="gg-hero-slide-link" aria-label="Shop SlabGuardz Collection">
+              <img
+                src="/banners/banner-1.jpg"
+                alt="SlabGuardz Precision Slab Armor & Grail Collection"
+                className="gg-hero-banner-img"
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync"
               />
-            ))}
+            </Link>
           </div>
-
-          <span className="gg-slider-counter">
-            {activeSlide + 1} / {heroBannerSlides.length}
-          </span>
-
-          <button
-            type="button"
-            className="gg-slider-arrow"
-            onClick={handleNextSlide}
-            aria-label="Next banner slide"
-          >
-            <ChevronRight size={18} strokeWidth={1.8} />
-          </button>
-
-          <button
-            type="button"
-            className="gg-slider-pause"
-            onClick={() => setIsPaused((prev) => !prev)}
-            aria-label={isPaused ? 'Play slideshow' : 'Pause slideshow'}
-          >
-            {isPaused ? <Play size={14} strokeWidth={2} /> : <Pause size={14} strokeWidth={2} />}
-          </button>
         </div>
       </div>
 
