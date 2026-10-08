@@ -12,7 +12,7 @@ const collections = [
     desc: 'Precision snap-on TPU bumper cases engineered for PSA & CGC slabs',
     tag: 'BUMPER CASES',
     to: '/category/slabguardz-protection',
-    img: '/slabs/slab-3.jpeg',
+    img: '/banners/banner-1.jpg',
     badge: 'FLAGSHIP',
   },
   {
@@ -20,7 +20,7 @@ const collections = [
     desc: 'Authenticated PSA & CGC vintage holos, modern grails, and Japanese gems',
     tag: 'AUTHENTIC GRAILS',
     to: '/category/pokemon-cards',
-    img: '/slabs/slab-1.jpeg',
+    img: '/banners/banner-2.jpg',
     badge: 'VERIFIED',
   },
   {
@@ -28,7 +28,7 @@ const collections = [
     desc: 'Precision card sleeves, acrylic stands, and travel protection kits',
     tag: 'GEAR & DISPLAY',
     to: '/category/accessories',
-    img: '/slabs/slab-2.jpeg',
+    img: '/banners/banner-3.jpg',
     badge: 'ESSENTIALS',
   },
 ]
