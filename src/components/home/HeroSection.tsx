@@ -1,16 +1,13 @@
 import {
   ArrowUpRight,
   ShieldCheck,
-  Check,
-  ShoppingBag,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { ButtonLink } from '../ui/Button'
-import { useProductCatalogState } from '../../hooks/useProductCatalogState'
-import { PriceDisplay } from '../ui/PriceDisplay'
-import { useCart } from '../../hooks/useCart'
+import { SectionHeading } from '../ui/SectionHeading'
+import { AnimateOnScroll, StaggerContainer } from '../ui/AnimateOnScroll'
+import { staggerChildVariants } from '../ui/animationVariants'
 
 const heroQuickFilters = [
   { label: 'All Products', to: '/shop' },
@@ -21,6 +18,33 @@ const heroQuickFilters = [
   { label: 'Best Sellers', to: '/best-sellers' },
 ]
 
+const collections = [
+  {
+    title: 'SlabGuardz Protection',
+    desc: 'Precision snap-on TPU bumper cases engineered for PSA & CGC slabs',
+    tag: 'BUMPER CASES',
+    to: '/category/slabguardz-protection',
+    img: '/banners/banner-1.jpg',
+    badge: 'FLAGSHIP',
+  },
+  {
+    title: 'Graded Pokémon Cards',
+    desc: 'Authenticated PSA & CGC vintage holos, modern grails, and Japanese gems',
+    tag: 'AUTHENTIC GRAILS',
+    to: '/category/pokemon-cards',
+    img: '/banners/banner-2.jpg',
+    badge: 'VERIFIED',
+  },
+  {
+    title: 'Collector Accessories',
+    desc: 'Precision card sleeves, acrylic stands, and travel protection kits',
+    tag: 'GEAR & DISPLAY',
+    to: '/category/accessories',
+    img: '/banners/banner-3.jpg',
+    badge: 'ESSENTIALS',
+  },
+]
+
 const heroTrustSignals = [
   { label: 'Impact-Absorbing TPU', desc: 'Drop-tested corner armor' },
   { label: 'Exact Precision Tolerances', desc: 'Snug fit for PSA & CGC' },
@@ -28,34 +52,7 @@ const heroTrustSignals = [
   { label: 'Pan-India Express', desc: 'Reliable doorstep dispatch' },
 ]
 
-function getProductDescription(product: { description?: string; category: string; name: string }) {
-  if (product.description && product.description.trim()) {
-    const plain = product.description.replace(/<[^>]*>?/gm, '').trim()
-    if (plain.length > 5) return plain
-  }
-  if (product.category === 'pokemon-cards') {
-    return 'Authenticated PSA graded Pokémon collectible single, preserved in collector-grade condition.'
-  }
-  if (product.category === 'slabguardz-protection') {
-    return 'Precision snap-on TPU bumper case with drop-absorbing corner defense.'
-  }
-  return 'Premium collector display and storage solution engineered for graded cards.'
-}
-
 export function HeroSection() {
-  const { products } = useProductCatalogState()
-  const { addItem } = useCart()
-  const [addedId, setAddedId] = useState<string | null>(null)
-
-  // Exactly 3 products per row matching the category section
-  const spotlightProducts = products.length > 0 ? products.slice(0, 3) : []
-
-  const handleQuickAdd = (product: typeof products[0]) => {
-    addItem(product)
-    setAddedId(product.id)
-    setTimeout(() => setAddedId(null), 1600)
-  }
-
   return (
     <section className="graded-hero" aria-label="SlabGuardz Graded Card Protection">
       {/* Fixed High-Resolution Hero Banner (Uncropped) */}
@@ -137,139 +134,36 @@ export function HeroSection() {
           ))}
         </motion.div>
 
-        {/* Live Product Spotlight Showcase (Hostinger API Products) — 3 products per row */}
+        {/* Shop by Category Section (Exchanged into Hero Spotlight position) */}
         <div className="graded-spotlight-section">
-          <div className="graded-spotlight-header">
-            <div>
-              <p className="spotlight-kicker">FEATURED DROPS</p>
-              <h2 className="spotlight-title">Precision Cases & Collector Grails</h2>
-            </div>
-            <Link to="/shop" className="spotlight-view-all">
-              <span>View All ({products.length || 3})</span>
-              <ArrowUpRight size={15} />
-            </Link>
-          </div>
+          <AnimateOnScroll>
+            <SectionHeading
+              eyebrow="EXPLORE COLLECTIONS"
+              title="Shop by category"
+              description="From armor-grade slab bumpers to authenticated grails, browse our curated editions."
+            />
+          </AnimateOnScroll>
 
-          <div className="graded-spotlight-grid">
-            {spotlightProducts.length > 0 ? (
-              spotlightProducts.map((product) => {
-                const isAdded = addedId === product.id
-                return (
-                  <motion.div
-                    key={product.id}
-                    className="graded-product-card"
-                    whileHover={{ y: -4 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div className="graded-card-img-wrap">
-                      <Link to={`/product/${product.id}`}>
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          loading="eager"
-                          className="graded-card-img"
-                        />
-                      </Link>
-                      <span className="graded-badge-pill">
-                        {product.badge || (product.stockStatus === 'in-stock' ? 'IN STOCK' : 'VERIFIED')}
-                      </span>
-                    </div>
-                    <div className="graded-card-body">
-                      <span className="graded-card-cat">{product.category.replaceAll('-', ' ')}</span>
-                      <h3 className="graded-card-name">
-                        <Link to={`/product/${product.id}`}>{product.name}</Link>
-                      </h3>
-                      <p className="graded-card-desc">
-                        {getProductDescription(product)}
-                      </p>
-                      <div className="graded-card-footer">
-                        <div className="graded-card-price-wrap">
-                          <PriceDisplay
-                            price={product.price}
-                            currencyCode={product.currencyCode}
-                            compareAtPrice={product.compareAtPrice}
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          className={`graded-card-action-btn${isAdded ? ' is-added' : ''}`}
-                          onClick={() => handleQuickAdd(product)}
-                          aria-label={`Add ${product.name} to cart`}
-                        >
-                          <span>{isAdded ? 'Added' : 'Add to Cart'}</span>
-                          {isAdded ? <Check size={14} /> : <ShoppingBag size={14} />}
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )
-              })
-            ) : (
-              // Showcase client's authentic banner photography while Hostinger loads — 3 per row
-              [
-                {
-                  id: 'psa-gengar',
-                  title: 'SlabGuardz Bumper — Crimson Flame',
-                  cat: 'SLABGUARDZ PROTECTION',
-                  desc: 'Precision snap-on TPU bumper cases engineered for PSA & CGC slabs.',
-                  img: '/banners/banner-1.jpg',
-                  price: 499,
-                  badge: 'FLAGSHIP',
-                },
-                {
-                  id: 'psa-dragonite',
-                  title: 'Graded Pokémon Cards',
-                  cat: 'AUTHENTIC GRAILS',
-                  desc: 'Authenticated PSA & CGC vintage holos, modern grails, and Japanese gems.',
-                  img: '/banners/banner-2.jpg',
-                  price: 1499,
-                  badge: 'VERIFIED',
-                },
-                {
-                  id: 'psa-mew',
-                  title: 'Collector Accessories',
-                  cat: 'GEAR & DISPLAY',
-                  desc: 'Precision card sleeves, acrylic stands, and travel protection kits.',
-                  img: '/banners/banner-3.jpg',
-                  price: 799,
-                  badge: 'ESSENTIALS',
-                },
-              ].map((item) => (
-                <motion.div
-                  key={item.id}
-                  className="graded-product-card"
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="graded-card-img-wrap">
-                    <Link to="/category/slabguardz-protection">
-                      <img
-                        src={item.img}
-                        alt={item.title}
-                        loading="eager"
-                        className="graded-card-img"
-                      />
-                    </Link>
-                    <span className="graded-badge-pill">{item.badge}</span>
+          <StaggerContainer className="graded-category-grid">
+            {collections.map((col) => (
+              <motion.div key={col.to} variants={staggerChildVariants}>
+                <Link to={col.to} className="graded-cat-tile">
+                  <div className="graded-cat-media">
+                    <img src={col.img} alt={col.title} loading="eager" />
+                    <span className="graded-cat-badge">{col.badge}</span>
                   </div>
-                  <div className="graded-card-body">
-                    <span className="graded-card-cat">{item.cat}</span>
-                    <h3 className="graded-card-name">
-                      <Link to="/category/slabguardz-protection">{item.title}</Link>
-                    </h3>
-                    <p className="graded-card-desc">{item.desc}</p>
-                    <div className="graded-card-footer">
-                      <span className="graded-price">₹{item.price}</span>
-                      <Link to="/shop" className="graded-card-action-btn">
-                        <span>Shop Now</span>
-                        <ArrowUpRight size={14} />
-                      </Link>
-                    </div>
+                  <div className="graded-cat-content">
+                    <span className="graded-cat-tag">{col.tag}</span>
+                    <h3 className="graded-cat-title">{col.title}</h3>
+                    <p className="graded-cat-desc">{col.desc}</p>
+                    <span className="graded-cat-link">
+                      Explore Collection <ArrowUpRight size={15} />
+                    </span>
                   </div>
-                </motion.div>
-              ))
-            )}
-          </div>
+                </Link>
+              </motion.div>
+            ))}
+          </StaggerContainer>
         </div>
 
         {/* Bottom Technical Trust Signals */}
