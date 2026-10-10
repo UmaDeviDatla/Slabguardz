@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Heart, Minus, Plus } from 'lucide-react'
+import { Check, ChevronDown, Heart, Minus, Plus, Zap } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -9,11 +9,6 @@ import { useWishlist } from '../../hooks/useWishlist'
 type ProductPurchasePanelProps = {
   product: Product
 }
-
-const colorOptions = [
-  { name: 'Gold', hex: '#f4e39c', soldOut: false },
-  { name: 'Silver', hex: '#bfc3c9', soldOut: false },
-]
 
 function formatGradedPrice(price: number, currencyCode = 'INR') {
   const formattedNumber = new Intl.NumberFormat('en-IN', {
@@ -37,13 +32,7 @@ function getCleanDescriptionParagraphs(product: Product): string[] {
       .split(/\n{2,}/)
       .map((p) => p.trim())
       .filter(Boolean)
-    if (parts.length >= 2) return parts
-    if (parts.length === 1) {
-      return [
-        parts[0],
-        'SlabGuardz offers an unparalleled aesthetic while maintaining functionality and a lightweight, premium feel - the perfect companion for your collection.',
-      ]
-    }
+    if (parts.length > 0) return parts
   }
 
   if (product.category === 'pokemon-cards') {
@@ -60,14 +49,42 @@ function getCleanDescriptionParagraphs(product: Product): string[] {
 }
 
 export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
+  const variants = product.variants ?? []
+  const hasMultipleVariants = variants.length > 1
+
+  const [selectedVariantId, setSelectedVariantId] = useState<string>(() => {
+    if (product.variantId && variants.some((v) => v.id === product.variantId)) {
+      return product.variantId
+    }
+    return variants[0]?.id ?? product.variantId ?? ''
+  })
+
   const [quantity, setQuantity] = useState(1)
-  const [selectedColor, setSelectedColor] = useState('Silver')
   const [justAdded, setJustAdded] = useState(false)
-  const [openAccordion, setOpenAccordion] = useState<'compatibility' | 'box' | null>(null)
-  const { addItem } = useCart()
+  const [openAccordion, setOpenAccordion] = useState<'compatibility' | 'box' | 'shipping' | 'returns' | null>('shipping')
+
+  const { addItem, openDrawer } = useCart()
   const { isInWishlist, toggleWishlist } = useWishlist()
 
-  const isOutOfStock = product.stockStatus === 'out-of-stock' || product.priceUnavailable
+  // Resolve currently active variant
+  const activeVariant =
+    variants.find((v) => v.id === selectedVariantId) ??
+    variants[0] ?? {
+      id: product.variantId ?? product.id,
+      title: product.variantTitle ?? 'Standard',
+      isAvailable: product.stockStatus !== 'out-of-stock',
+      price: product.price,
+      compareAtPrice: product.compareAtPrice,
+      currencyCode: product.currencyCode,
+    }
+
+  const currentPrice = activeVariant.price ?? product.price
+  const currentCompareAtPrice = activeVariant.compareAtPrice ?? product.compareAtPrice
+  const isOutOfStock =
+    !activeVariant.isAvailable ||
+    product.stockStatus === 'out-of-stock' ||
+    product.priceUnavailable
+
   const maxQuantity = product.stockQuantity ?? Number.POSITIVE_INFINITY
   const isAtStockLimit = quantity >= maxQuantity
   const isSaved = isInWishlist(product.id)
@@ -79,14 +96,28 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
 
   const paragraphs = getCleanDescriptionParagraphs(product)
 
+  const getTargetProduct = (): Product => ({
+    ...product,
+    variantId: activeVariant.id,
+    variantTitle: activeVariant.title,
+    price: currentPrice,
+    compareAtPrice: currentCompareAtPrice,
+  })
+
   const handleAddToCart = () => {
     if (isOutOfStock) return
-    addItem(product, quantity)
+    addItem(getTargetProduct(), quantity)
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 1800)
   }
 
-  const toggleSection = (section: 'compatibility' | 'box') => {
+  const handleBuyNow = () => {
+    if (isOutOfStock) return
+    addItem(getTargetProduct(), quantity)
+    openDrawer()
+  }
+
+  const toggleSection = (section: 'compatibility' | 'box' | 'shipping' | 'returns') => {
     setOpenAccordion((prev) => (prev === section ? null : section))
   }
 
@@ -104,18 +135,18 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
       {/* Price */}
       <div className="gg-price-row">
         <span className="gg-price">
-          {product.priceUnavailable ? 'Price unavailable' : formatGradedPrice(product.price, product.currencyCode)}
+          {product.priceUnavailable ? 'Price unavailable' : formatGradedPrice(currentPrice, product.currencyCode)}
         </span>
-        {product.compareAtPrice && product.compareAtPrice > product.price && (
+        {currentCompareAtPrice && currentCompareAtPrice > currentPrice && (
           <del className="gg-compare-price">
-            {formatGradedPrice(product.compareAtPrice, product.currencyCode)}
+            {formatGradedPrice(currentCompareAtPrice, product.currencyCode)}
           </del>
         )}
       </div>
 
       {/* Tax & Shipping Notice */}
       <p className="gg-tax-note">
-        Tax included. <Link to="/faq">Shipping</Link> calculated at checkout.
+        Tax included. Free shipping on orders above ₹1,499. <Link to="/faq">Shipping policy</Link>.
       </p>
 
       {/* Star Rating */}
@@ -123,40 +154,40 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
         <span>★★★★★</span>
       </div>
 
-      {/* Description Paragraphs */}
+      {/* Dynamic Product Description */}
       <div className="gg-description">
         {paragraphs.map((para, idx) => (
           <p key={idx}>{para}</p>
         ))}
       </div>
 
-      {/* Color Swatch Selector */}
-      <div className="gg-color-block">
-        <p className="gg-field-label">
-          <strong>Color:</strong> {selectedColor}
-        </p>
-        <div className="gg-color-swatches" role="radiogroup" aria-label="Select color">
-          {colorOptions.map((option) => {
-            const active = selectedColor === option.name
-            return (
-              <button
-                key={option.name}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                aria-label={`Color ${option.name}`}
-                className={`gg-color-swatch${active ? ' is-active' : ''}`}
-                onClick={() => setSelectedColor(option.name)}
-              >
-                <span
-                  className="gg-swatch-inner"
-                  style={{ backgroundColor: option.hex }}
-                />
-              </button>
-            )
-          })}
+      {/* Dynamic Variant Selector (Hostinger Options) */}
+      {hasMultipleVariants && (
+        <div className="gg-variant-block">
+          <p className="gg-field-label">
+            <strong>Selection:</strong> {activeVariant.title}
+          </p>
+          <div className="gg-variant-options" role="radiogroup" aria-label="Select product option">
+            {variants.map((variant) => {
+              const active = variant.id === activeVariant.id
+              return (
+                <button
+                  key={variant.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  disabled={!variant.isAvailable}
+                  className={`gg-variant-pill${active ? ' is-active' : ''}${!variant.isAvailable ? ' is-sold-out' : ''}`}
+                  onClick={() => setSelectedVariantId(variant.id)}
+                >
+                  <span>{variant.title}</span>
+                  {!variant.isAvailable && <span className="gg-variant-sold-out-tag">Sold out</span>}
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Quantity Selector */}
       <div className="gg-quantity-block">
@@ -186,7 +217,7 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
         </div>
       </div>
 
-      {/* Add to Cart + Wishlist Row */}
+      {/* Add to Cart + Buy Now + Wishlist Row */}
       <div className="gg-cta-row">
         <motion.button
           whileTap={{ scale: 0.98 }}
@@ -208,6 +239,17 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
         </motion.button>
 
         <motion.button
+          whileTap={{ scale: 0.98 }}
+          type="button"
+          className="gg-buy-now-btn"
+          disabled={isOutOfStock}
+          onClick={handleBuyNow}
+        >
+          <Zap size={16} strokeWidth={2.2} />
+          <span>Buy Now</span>
+        </motion.button>
+
+        <motion.button
           whileTap={{ scale: 0.9 }}
           type="button"
           className={`gg-wishlist-btn${isSaved ? ' is-active' : ''}`}
@@ -219,8 +261,76 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
         </motion.button>
       </div>
 
-      {/* Accordion Sections: Compatibility & What's in the box? */}
+      {/* Accordion Sections: Compatibility, What's in the box, Shipping, Returns */}
       <div className="gg-accordions">
+        <div className="gg-accordion-item">
+          <button
+            type="button"
+            className="gg-accordion-trigger"
+            aria-expanded={openAccordion === 'shipping'}
+            onClick={() => toggleSection('shipping')}
+          >
+            <span>Shipping & Delivery</span>
+            <ChevronDown
+              size={17}
+              strokeWidth={1.8}
+              className={`gg-accordion-icon${openAccordion === 'shipping' ? ' is-open' : ''}`}
+            />
+          </button>
+          <AnimatePresence initial={false}>
+            {openAccordion === 'shipping' && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="gg-accordion-content"
+              >
+                <div className="gg-accordion-inner">
+                  <p>
+                    {product.shippingInfo ||
+                      'Free express shipping across India on orders above ₹1,499. Standard delivery in 3–5 business days with live tracking via Shiprocket. All orders are packed in reinforced collector armored boxes.'}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="gg-accordion-item">
+          <button
+            type="button"
+            className="gg-accordion-trigger"
+            aria-expanded={openAccordion === 'returns'}
+            onClick={() => toggleSection('returns')}
+          >
+            <span>Returns & Guarantee</span>
+            <ChevronDown
+              size={17}
+              strokeWidth={1.8}
+              className={`gg-accordion-icon${openAccordion === 'returns' ? ' is-open' : ''}`}
+            />
+          </button>
+          <AnimatePresence initial={false}>
+            {openAccordion === 'returns' && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="gg-accordion-content"
+              >
+                <div className="gg-accordion-inner">
+                  <p>
+                    {product.returnsInfo ||
+                      '100% authentic collector guarantee. If your order arrives damaged or defective in transit, contact support within 48 hours for immediate replacement or resolution.'}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
         <div className="gg-accordion-item">
           <button
             type="button"
@@ -247,11 +357,11 @@ export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
                 <div className="gg-accordion-inner">
                   {product.category === 'pokemon-cards' ? (
                     <p>
-                      Encapsulated in a standard tamper-evident graded slab. Compatible with all SlabGuardz precision TPU bumpers, acrylic display stands, and multi-slab wall cabinets.
+                      Encapsulated in a standard tamper-evident graded slab. Fully compatible with SlabGuardz precision TPU bumpers, acrylic display stands, and multi-slab collector cases.
                     </p>
                   ) : (
                     <p>
-                      Precision-engineered to fit standard PSA, BGS, and CGC graded card slabs with a snug, drop-absorbing TPU inner frame and raised polycarbonate bezel.
+                      Precision-engineered to fit standard PSA, BGS, and CGC graded card slabs with snug, drop-absorbing corner defense and raised polycarbonate bezels.
                     </p>
                   )}
                 </div>

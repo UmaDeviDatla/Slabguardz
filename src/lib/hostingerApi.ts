@@ -1,4 +1,4 @@
-import type { Product, ProductCategory } from '../data/products'
+import type { Product, ProductCategory, ProductVariant } from '../data/products'
 
 const apiBaseUrl = import.meta.env.VITE_HOSTINGER_ECOMMERCE_API_URL ?? 'https://api-ecommerce.hostinger.com'
 const salesChannelId = import.meta.env.VITE_HOSTINGER_SALES_CHANNEL_ID
@@ -228,12 +228,30 @@ function mapProduct(
   const regularPrice = lowestVariant?.amount ?? fallbackAmount
   const currencyCode = lowestVariant?.currencyCode ?? fallbackCurrencyCode
 
+  const mappedVariants: ProductVariant[] = variants.map((variant) => {
+    const vPrice = variant.prices?.[0]
+    const amount = toMajorCurrencyAmount(vPrice?.amount ?? null, vPrice?.currency_code ?? fallbackCurrencyCode)
+    const saleAmount = toMajorCurrencyAmount(vPrice?.sale_amount ?? null, vPrice?.currency_code ?? fallbackCurrencyCode)
+    const varPrice = saleAmount ?? amount ?? fallbackAmount ?? 0
+    const varRegularPrice = amount ?? fallbackAmount
+    return {
+      id: variant.id,
+      title: variant.title?.trim() || 'Standard',
+      sku: variant.sku ?? undefined,
+      isAvailable: variant.is_available,
+      price: varPrice,
+      compareAtPrice: varRegularPrice !== null && varRegularPrice > varPrice ? varRegularPrice : undefined,
+      currencyCode: vPrice?.currency_code ?? fallbackCurrencyCode,
+    }
+  })
+
   return {
     id: product.id,
     name: product.title ?? product.slug ?? product.id,
     slug: product.slug ?? undefined,
     variantId: selectedVariant?.id,
     variantTitle: selectedVariant?.title ?? undefined,
+    variants: mappedVariants,
     category: displayCategory,
     // Strictly preserve the exact Hostinger category assignments (empty [] if unassigned in Hostinger)
     categories,
@@ -251,13 +269,18 @@ function mapProduct(
   }
 }
 
+const NOCACHE_HEADERS = {
+  'Cache-Control': 'no-cache, no-store, must-revalidate',
+  Pragma: 'no-cache',
+}
+
 async function fetchHostingerCollectionsMap(signal?: AbortSignal): Promise<Map<string, ProductCategory>> {
   const map = new Map<string, ProductCategory>()
   if (!salesChannelId) return map
 
   try {
     const url = new URL(`/v2/channels/${encodeURIComponent(salesChannelId)}/collections`, apiBaseUrl)
-    const response = await fetch(url, { signal })
+    const response = await fetch(url, { signal, headers: NOCACHE_HEADERS })
     if (!response.ok) return map
     const payload = (await response.json()) as HostingerCollectionsResponse
     const list = payload.data ?? payload.collections ?? []
@@ -295,7 +318,7 @@ async function listHostingerVariants(
     url.searchParams.set('limit', '100')
     url.searchParams.set('product_ids', productIds.join(','))
 
-    const response = await fetch(url, { signal })
+    const response = await fetch(url, { signal, headers: NOCACHE_HEADERS })
     if (!response.ok) {
       throw new Error(`Hostinger variant prices request failed (${response.status}).`)
     }
@@ -326,7 +349,7 @@ export async function listHostingerProducts(
   url.searchParams.set('limit', '200')
 
   const [response, dynamicCollectionMap] = await Promise.all([
-    fetch(url, { signal }),
+    fetch(url, { signal, headers: NOCACHE_HEADERS }),
     fetchHostingerCollectionsMap(signal),
   ])
 

@@ -44,7 +44,12 @@ export function ProductCard({ product }: ProductCardProps) {
     <article className="graded-product-card">
       <div className="graded-card-img-wrap">
         <Link to={`/product/${product.id}`} aria-label={`View ${product.name}`}>
-          <img src={product.image} alt={product.name} loading="lazy" className="graded-card-img" />
+          <img
+            src={product.image || product.gallery?.[0] || '/favicon.png'}
+            alt={product.name}
+            loading="lazy"
+            className="graded-card-img"
+          />
         </Link>
         <span className="graded-badge-pill">{badgeText}</span>
         <motion.button

@@ -8,38 +8,45 @@ type ProductGalleryProps = {
 }
 
 export function ProductGallery({ product }: ProductGalleryProps) {
-  const images = product.gallery?.length ? product.gallery : [product.image]
+  const rawImages = product.gallery?.length ? product.gallery : [product.image]
+  const images = rawImages.filter(Boolean).length > 0 ? rawImages.filter(Boolean) : ['/favicon.png']
   const [selectedImage, setSelectedImage] = useState(0)
   const [isZoomed, setIsZoomed] = useState(false)
 
-  return (
-    <div className="gg-gallery">
-      {/* Vertical thumbnails column on the left side (GradedGuard layout) */}
-      <div className="gg-gallery-thumbs" aria-label="Product image thumbnails">
-        {images.map((image, index) => (
-          <button
-            className={`gg-thumb${index === selectedImage ? ' is-active' : ''}`}
-            key={`${image}-${index}`}
-            type="button"
-            aria-label={`View product image ${index + 1}`}
-            onClick={() => setSelectedImage(index)}
-          >
-            <img src={image} alt={`${product.name} thumbnail ${index + 1}`} />
-          </button>
-        ))}
-      </div>
+  const activeIndex = selectedImage < images.length ? selectedImage : 0
+  const activeImage = images[activeIndex]
 
-      {/* Main image */}
+  return (
+    <div className={`gg-gallery${images.length <= 1 ? ' single-image' : ''}`}>
+      {/* Vertical thumbnails column (shown only when multiple images exist) */}
+      {images.length > 1 && (
+        <div className="gg-gallery-thumbs" aria-label="Product image thumbnails">
+          {images.map((image, index) => (
+            <button
+              className={`gg-thumb${index === activeIndex ? ' is-active' : ''}`}
+              key={`${image}-${index}`}
+              type="button"
+              aria-label={`View product image ${index + 1}`}
+              onClick={() => setSelectedImage(index)}
+            >
+              <img src={image} alt={`${product.name} thumbnail ${index + 1}`} loading="lazy" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Main image container */}
       <div className="gg-gallery-main">
         <AnimatePresence mode="wait">
           <motion.img
-            key={selectedImage}
-            src={images[selectedImage]}
+            key={activeImage}
+            src={activeImage}
             alt={product.name}
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.25 }}
+            loading="eager"
           />
         </AnimatePresence>
         <button
@@ -70,7 +77,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
             <X size={24} />
           </button>
           <img
-            src={images[selectedImage]}
+            src={activeImage}
             alt={product.name}
             onClick={(e) => e.stopPropagation()}
           />

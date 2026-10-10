@@ -1,26 +1,51 @@
 import emailjs from '@emailjs/browser'
-import { AlertCircle, ArrowRight, Box, ChevronDown, RotateCcw, X } from 'lucide-react'
+import {
+  ArrowRight,
+  ChevronDown,
+  Mail,
+  PackageSearch,
+  RotateCcw,
+  X,
+  XCircle,
+} from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { PageIntro } from '../components/ui/PageIntro'
+import { TrackOrderCard } from '../components/support/TrackOrderCard'
+import { ImageUploadField, type UploadedImage } from '../components/support/ImageUploadField'
 
 const EMAILJS_SERVICE_ID = 'service_ozo9wjf'
 const CONTACT_TEMPLATE_ID = 'template_0rwlbxm'
-const REPORT_ISSUE_TEMPLATE_ID = 'template_a2crnm3'
 const EMAILJS_PUBLIC_KEY = 'EOVWqgKt9C7QPNxsL'
-const TRACK_ORDER_SERVICE_ID = 'service_wphgcob'
-const TRACK_ORDER_REQUEST_TEMPLATE_ID = 'template_mot71xw'
-const TRACK_ORDER_RECEIVED_TEMPLATE_ID = 'template_fsgs5wh'
-const TRACK_ORDER_PUBLIC_KEY = 'DoIKCRAgtVouqnzNC'
+
 const RETURN_ORDER_SERVICE_ID = 'service_axhv4np'
 const RETURN_ORDER_TEMPLATE_ID = 'template_1uotb2a'
 const RETURN_ORDER_PUBLIC_KEY = 'r_xQqeSv4DSoQIcvj'
+
 const CANCEL_ORDER_SERVICE_ID = 'service_axhv4np'
 const CANCEL_ORDER_TEMPLATE_ID = 'template_fr89duj'
 const CANCEL_ORDER_PUBLIC_KEY = 'r_xQqeSv4DSoQIcvj'
-const TRACK_ORDER_REQUEST_TYPES = ['Track my order', 'Previous order information', 'Shipping / delivery question', 'Other order question']
-const RETURN_REASON_OPTIONS = ['Damaged product', 'Wrong product received', 'Product not as expected', 'Product arrived damaged', 'Changed my mind', 'Other']
-const CANCEL_REASON_OPTIONS = ['Ordered by mistake', 'Changed my mind', 'Ordered the wrong product', 'Duplicate order', 'Found a better option', 'Other']
+
+const RETURN_REASON_OPTIONS = [
+  'Damaged product / transit damage',
+  'Wrong product received',
+  'Product not as expected / description mismatch',
+  'Missing item or seal issue',
+  'Changed my mind',
+  'Other',
+]
+
+const CANCEL_REASON_OPTIONS = [
+  'Ordered by mistake',
+  'Changed my mind',
+  'Ordered the wrong product / slab type',
+  'Duplicate order placement',
+  'Found a better option',
+  'Delivery address error',
+  'Other',
+]
+
 type HelpAction = 'track' | 'return' | 'cancel' | 'issue'
 type RequestStatus = 'idle' | 'success' | 'error'
 
@@ -29,31 +54,85 @@ function isValidEmail(email: string) {
 }
 
 const faqs = [
-  ['How do I choose the right SlabGuardz product?', 'Browse product details and specifications on each product page, or contact our team if you need help choosing.'],
-  ['How do I track my order?', 'Use Track Order below and enter your details. If lookup is unavailable, our team can help with your request.'],
-  ['What is your shipping policy?', 'Shipping details are shown during checkout and in the order information provided for your purchase.'],
-  ['What is your return and refund policy?', 'Submit a return request below with your order details and our team will review it with you.'],
-  ['How do I cancel an order?', 'Send a cancellation request as soon as possible. Requests are reviewed and are not automatically confirmed.'],
-  ['What should I do if my order arrives damaged?', 'Use Report an Issue and include your order number, issue type, and a clear description.'],
+  [
+    'How do I track my order?',
+    'Click "Track Your Shipment" above and enter your Order ID or tracking docket. You can check live status or open official Shiprocket tracking instantly.',
+  ],
+  [
+    'What is your return and replacement policy?',
+    'Submit a return request above with your order details and photos of the item or damage. Our Orders team reviews requests within 24 hours.',
+  ],
+  [
+    'How do I request an order cancellation?',
+    'Submit a cancellation request as soon as possible before warehouse dispatch. Once processed, our team confirms status via email.',
+  ],
+  [
+    'What should I do if my order arrives damaged?',
+    'Use the Return & Replacement form above, select "Damaged product", and upload photos from your device for expedited replacement.',
+  ],
+  [
+    'What is your shipping policy?',
+    'Free express shipping across India on orders above ₹1,499. Orders are shipped via Shiprocket with verified tracking links sent via SMS and email.',
+  ],
+  [
+    'How do I choose the right SlabGuardz bumper for my slab?',
+    'Our precision bumpers are tailored for standard PSA, BGS, and CGC slabs. Contact our concierge team below if you need sizing guidance.',
+  ],
 ]
-const actionCards: Array<{ id: HelpAction; title: string; description: string; icon: typeof Box }> = [
-  { id: 'track', title: 'Track order', description: 'Check your order status', icon: Box },
-  { id: 'return', title: 'Return order', description: 'Request a return review', icon: RotateCcw },
-  { id: 'cancel', title: 'Cancel order', description: 'Request an order cancellation', icon: X },
-  { id: 'issue', title: 'Report an issue', description: 'Tell us what went wrong', icon: AlertCircle },
+
+const serviceHubCards = [
+  {
+    id: 'track' as HelpAction,
+    icon: PackageSearch,
+    title: 'Track Your Shipment',
+    description: 'Get real-time courier tracking updates, docket numbers, and delivery timelines.',
+    action: 'Track Order',
+  },
+  {
+    id: 'return' as HelpAction,
+    icon: RotateCcw,
+    title: 'Returns & Replacements',
+    description: 'Initiate a replacement or return request for transit-damaged items with photo proof.',
+    action: 'Return Request',
+  },
+  {
+    id: 'cancel' as HelpAction,
+    icon: XCircle,
+    title: 'Order Cancellations',
+    description: 'Request cancellation of orders prior to courier warehouse dispatch.',
+    action: 'Cancel Order',
+  },
+  {
+    id: 'issue' as HelpAction,
+    icon: Mail,
+    title: 'Collector Concierge',
+    description: 'Speak directly with our card authenticity, protection, and grading specialists.',
+    action: 'Contact Concierge',
+  },
 ]
 
 export function ContactPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const contactFormRef = useRef<HTMLElement>(null)
+
   const requestedAction = searchParams.get('help') as HelpAction | null
   const [activeAction, setActiveAction] = useState<HelpAction | null>(() => {
     if (location.pathname === '/track-order') return 'track'
-    return actionCards.some((card) => card.id === requestedAction) ? requestedAction : null
+    return serviceHubCards.some((card) => card.id === requestedAction) ? requestedAction : null
   })
 
-  const openAction = (action: HelpAction) => { setActiveAction(action); setSearchParams({ help: action }) }
+  const openAction = (action: HelpAction) => {
+    if (action === 'issue') {
+      // Scroll smoothly to the contact form for Collector Concierge
+      contactFormRef.current?.scrollIntoView({ behavior: 'smooth' })
+      return
+    }
+    setActiveAction(action)
+    setSearchParams({ help: action })
+  }
+
   const closeAction = () => {
     setActiveAction(null)
     setSearchParams({})
@@ -62,28 +141,139 @@ export function ContactPage() {
     }
   }
 
-  return <div className="contact-help-page">
-    <div className="contact-page-intro">
-      <nav className="collection-breadcrumbs" aria-label="Breadcrumb"><Link to="/">Home</Link><span aria-hidden="true">/</span><span aria-current="page">Contact & Help</span></nav>
-      <PageIntro eyebrow="Support center" title="Contact & Help" description="Need help with an order or your collection? We are here to make the next step simple." />
+  return (
+    <div className="contact-help-page">
+      <div className="contact-page-intro">
+        <nav className="collection-breadcrumbs" aria-label="Breadcrumb">
+          <Link to="/">Home</Link>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Contact & Help</span>
+        </nav>
+        <PageIntro
+          eyebrow="Support center"
+          title="Contact & Help"
+          description="Need help with an order or your collection? We are here to make the next step simple."
+        />
+      </div>
+
+      {/* Modern Order Services Section matching Screenshot 4 */}
+      <section className="account-support-section" aria-labelledby="help-actions-title">
+        <div className="help-container">
+          <div className="account-support-header">
+            <p className="eyebrow">ORDER SERVICES</p>
+            <h2 id="help-actions-title">How can we assist you today?</h2>
+            <p>
+              Select a service below to connect with our dedicated team. We verify your order details
+              immediately to expedite all inquiries.
+            </p>
+          </div>
+
+          <div className="account-actions-grid" role="list">
+            {serviceHubCards.map(({ id, icon: Icon, title, description, action }) => (
+              <motion.div whileHover={{ y: -4 }} key={id}>
+                <button
+                  type="button"
+                  onClick={() => openAction(id)}
+                  className="account-action-card text-left w-full cursor-pointer"
+                  role="listitem"
+                  style={{ textAlign: 'left', width: '100%', cursor: 'pointer' }}
+                >
+                  <div className="account-action-icon" aria-hidden="true">
+                    <Icon size={22} strokeWidth={1.8} />
+                  </div>
+                  <div className="account-action-copy">
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                  </div>
+                  <span className="account-action-link">
+                    {action} <ArrowRight size={15} />
+                  </span>
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Frequently Asked Questions */}
+      <section className="help-faq-section" aria-labelledby="help-faq-title">
+        <div className="help-container help-faq-layout">
+          <div>
+            <p className="eyebrow">Answers, first</p>
+            <h2 id="help-faq-title">Frequently asked questions</h2>
+            <p>Find a quick starting point, or reach out to our team for something more specific.</p>
+          </div>
+          <div className="help-faq-list">
+            {faqs.map(([question, answer]) => (
+              <details key={question}>
+                <summary>
+                  {question}
+                  <ChevronDown size={18} />
+                </summary>
+                <p>{answer}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* General Contact Form */}
+      <section ref={contactFormRef}>
+        <ContactForm />
+      </section>
+
+      {/* Interactive Modal / Dialog */}
+      {activeAction && <HelpDialog action={activeAction} onClose={closeAction} />}
     </div>
-    <section className="help-actions-section" aria-labelledby="help-actions-title"><div className="help-container"><div className="help-section-heading"><p className="eyebrow">Order support</p><h2 id="help-actions-title">What can we help with?</h2></div><div className="help-action-grid">{actionCards.map(({ id, title, description, icon: Icon }) => <button className="help-action-card" key={id} type="button" onClick={() => openAction(id)}><Icon size={26} strokeWidth={1.6} /><strong>{title}</strong><span>{description}</span><ArrowRight className="help-action-arrow" size={18} strokeWidth={1.8} /></button>)}</div></div></section>
-    <section className="help-faq-section" aria-labelledby="help-faq-title"><div className="help-container help-faq-layout"><div><p className="eyebrow">Answers, first</p><h2 id="help-faq-title">Frequently asked questions</h2><p>Find a quick starting point, or reach out to our team for something more specific.</p></div><div className="help-faq-list">{faqs.map(([question, answer]) => <details key={question}><summary>{question}<ChevronDown size={18} /></summary><p>{answer}</p></details>)}</div></div></section>
-    <ContactForm />
-    {activeAction && <HelpDialog action={activeAction} onClose={closeAction} />}
-  </div>
+  )
 }
 
 function HelpDialog({ action, onClose }: { action: HelpAction; onClose: () => void }) {
-  return <div className="help-dialog-layer"><button className="help-dialog-backdrop" type="button" aria-label="Close help form" onClick={onClose} /><section className="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-dialog-title"><button className="help-dialog-close" type="button" aria-label="Close help form" onClick={onClose}><X size={20} /></button>{action === 'track' ? <TrackForm onClose={onClose} /> : action === 'issue' ? <IssueForm onClose={onClose} /> : <RequestForm action={action} onClose={onClose} />}</section></div>
+  return (
+    <div className="help-dialog-layer">
+      <button
+        className="help-dialog-backdrop"
+        type="button"
+        aria-label="Close help form"
+        onClick={onClose}
+      />
+      <section
+        className={`help-dialog${action === 'track' ? ' rezoni-dialog-style' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="help-dialog-title"
+      >
+        <button
+          className="help-dialog-close"
+          type="button"
+          aria-label="Close help form"
+          onClick={onClose}
+        >
+          <X size={20} />
+        </button>
+
+        {action === 'track' ? (
+          <TrackOrderCard onClose={onClose} />
+        ) : action === 'return' ? (
+          <ReturnForm onClose={onClose} />
+        ) : action === 'cancel' ? (
+          <CancelForm onClose={onClose} />
+        ) : null}
+      </section>
+    </div>
+  )
 }
 
-function TrackForm({ onClose }: { onClose: () => void }) {
+/**
+ * Enhanced Return Form matching Screenshot 2 with Local Device Image Uploads
+ */
+function ReturnForm({ onClose }: { onClose: () => void }) {
   const formRef = useRef<HTMLFormElement>(null)
-  const [isSending, setIsSending] = useState(false)
   const [status, setStatus] = useState<RequestStatus>('idle')
+  const [isSending, setIsSending] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [customerName, setCustomerName] = useState('')
+  const [images, setImages] = useState<UploadedImage[]>([])
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -93,107 +283,25 @@ function TrackForm({ onClose }: { onClose: () => void }) {
     const name = String(formData.get('name') ?? '').trim()
     const email = String(formData.get('email') ?? '').trim()
     const orderNumber = String(formData.get('order_number') ?? '').trim()
-    const requestType = String(formData.get('request_type') ?? '').trim()
-    const message = String(formData.get('message') ?? '').trim()
-
-    if (!name || !isValidEmail(email)) {
-      setStatus('error')
-      setErrorMessage('Please enter your full name and a valid email address.')
-      return
-    }
-
-    if (orderNumber && orderNumber.length < 2) {
-      setStatus('error')
-      setErrorMessage('Please provide a valid order number, if you have one.')
-      return
-    }
-
-    if (message && message.length > 2000) {
-      setStatus('error')
-      setErrorMessage('Your message is a bit long. Please shorten it to 2,000 characters or fewer.')
-      return
-    }
-
-    setIsSending(true)
-    setStatus('idle')
-    setErrorMessage('')
-
-    try {
-      await emailjs.send(
-        TRACK_ORDER_SERVICE_ID,
-        TRACK_ORDER_REQUEST_TEMPLATE_ID,
-        {
-          name,
-          email,
-          order_number: orderNumber,
-          request_type: requestType,
-          message: message || '',
-        },
-        { publicKey: TRACK_ORDER_PUBLIC_KEY },
-      )
-
-      try {
-        await emailjs.send(
-          TRACK_ORDER_SERVICE_ID,
-          TRACK_ORDER_RECEIVED_TEMPLATE_ID,
-          {
-            name,
-            email,
-            order_number: orderNumber,
-          },
-          { publicKey: TRACK_ORDER_PUBLIC_KEY },
-        )
-      } catch {
-        // Ignore the customer confirmation failure so the support request is still processed.
-      }
-
-      setCustomerName(name)
-      formRef.current.reset()
-      setStatus('success')
-    } catch {
-      setStatus('error')
-      setErrorMessage('We could not send your request right now. Please try again in a moment or contact us directly.')
-    } finally {
-      setIsSending(false)
-    }
-  }
-
-  if (status === 'success') {
-    return <div className="help-form help-track-success"><p className="eyebrow">Request received</p><h2 id="help-dialog-title">Request received</h2><p>Thanks, {customerName}. We've received your order support request. Our team will verify your details and contact you at the email address provided.</p><p className="help-form-security-note">Please do not send passwords, OTPs, card numbers, CVV, UPI PINs, or other confidential payment information.</p><button className="button button-primary" type="button" onClick={onClose}>Back to Support</button></div>
-  }
-
-  return <form ref={formRef} className="help-form" onSubmit={handleSubmit}><p className="eyebrow">Order support</p><h2 id="help-dialog-title">Track my order</h2><p>Share the details and our support team will review your order request manually.</p><div className="help-form-row"><label>Full name<input name="name" autoComplete="name" required /></label><label>Email address<input name="email" type="email" autoComplete="email" required /></label></div><label>Order number<span className="help-form-help">Optional, if you have it</span><input name="order_number" placeholder="e.g. SLB-12345" /></label><label>Request type<select name="request_type" required><option value="">Select a request</option>{TRACK_ORDER_REQUEST_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label>Message<span className="help-form-help">Optional, but recommended</span><textarea name="message" rows={5} placeholder="Add any delivery, shipping, or order questions you want reviewed." /></label><button className="button button-primary" type="submit" disabled={isSending}>{isSending ? 'Sending...' : 'Submit request'}</button>{status === 'error' && <p className="help-form-note help-form-error" role="alert">{errorMessage || 'Something went wrong while sending your request. Please try again.'}</p>}</form>
-}
-
-function RequestForm({ action, onClose }: { action: 'return' | 'cancel'; onClose: () => void }) {
-  const formRef = useRef<HTMLFormElement>(null)
-  const [status, setStatus] = useState<RequestStatus>('idle')
-  const [isSending, setIsSending] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [customerName, setCustomerName] = useState('')
-  const isReturn = action === 'return'
-
-  const handleReturnSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!formRef.current || isSending) return
-
-    const form = formRef.current
-    const formData = new FormData(form)
-    const name = String(formData.get('name') ?? '').trim()
-    const email = String(formData.get('email') ?? '').trim()
-    const orderNumber = String(formData.get('order_number') ?? '').trim()
     const returnReason = String(formData.get('return_reason') ?? '').trim()
     const message = String(formData.get('message') ?? '').trim()
 
     if (!name || !isValidEmail(email) || !orderNumber || !returnReason) {
       setStatus('error')
-      setErrorMessage('Please complete the required fields: full name, valid email, order number, and reason for return.')
+      setErrorMessage(
+        'Please complete the required fields: full name, valid email, order number, and reason for return.',
+      )
       return
     }
 
     setIsSending(true)
     setStatus('idle')
     setErrorMessage('')
+
+    const filesSummary =
+      images.length > 0
+        ? `\n\n[Uploaded Photos from Device: ${images.length} file(s) - ${images.map((img) => img.name).join(', ')}]`
+        : ''
 
     try {
       await emailjs.send(
@@ -204,28 +312,138 @@ function RequestForm({ action, onClose }: { action: 'return' | 'cancel'; onClose
           email,
           order_number: orderNumber,
           return_reason: returnReason,
-          message: message || '',
+          message: `${message}${filesSummary}`,
+          // Pass compressed image data URLs for templates configured with attachment tags
+          image_attachment_1: images[0]?.dataUrl ?? '',
+          image_attachment_2: images[1]?.dataUrl ?? '',
+          image_attachment_3: images[2]?.dataUrl ?? '',
+          attachment_preview: images[0]?.dataUrl ?? '',
+          has_attachments: images.length > 0 ? 'Yes' : 'No',
+          attachments_count: images.length,
+          attachments_summary: images.map((i) => i.name).join(', '),
         },
         { publicKey: RETURN_ORDER_PUBLIC_KEY },
       )
 
       setCustomerName(name)
-      form.reset()
+      formRef.current.reset()
+      setImages([])
       setStatus('success')
     } catch {
       setStatus('error')
-      setErrorMessage('We could not send your return request right now. Please try again in a moment.')
+      setErrorMessage(
+        'We could not send your return request right now. Please try again in a moment.',
+      )
     } finally {
       setIsSending(false)
     }
   }
 
-  const handleCancelSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  if (status === 'success') {
+    return (
+      <div className="help-form help-track-success">
+        <p className="eyebrow">RETURN REQUEST RECEIVED</p>
+        <h2 id="help-dialog-title">Return request received</h2>
+        <p>
+          Thanks, {customerName}. We&apos;ve received your return request
+          {images.length > 0 ? ' along with your uploaded photos' : ''}. Our Orders team will review
+          your request and contact you at the email address provided.
+        </p>
+        <p className="help-form-security-note">
+          Please note that submitting a return request does not automatically approve a return or
+          refund. Our team will verify the order and applicable return policy before processing it.
+        </p>
+        <button className="button button-primary" type="button" onClick={onClose}>
+          Back to Support
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <form ref={formRef} className="help-form" onSubmit={handleSubmit}>
+      <p className="eyebrow">ORDER RETURN</p>
+      <h2 id="help-dialog-title">RETURN ORDER</h2>
+      <p>Tell us about the item you would like to return and our Orders team will review your request.</p>
+
+      <div className="help-form-row">
+        <label>
+          Full name
+          <input name="name" autoComplete="name" required placeholder="Enter your full name" />
+        </label>
+        <label>
+          Email address
+          <input name="email" type="email" autoComplete="email" required placeholder="name@example.com" />
+        </label>
+      </div>
+
+      <label>
+        Order number
+        <input name="order_number" required placeholder="e.g. SLB-10824" />
+      </label>
+
+      <label>
+        Reason for return
+        <select name="return_reason" required defaultValue="">
+          <option value="" disabled>
+            Select a reason
+          </option>
+          {RETURN_REASON_OPTIONS.map((reason) => (
+            <option key={reason} value={reason}>
+              {reason}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {/* Image Upload Feature from Local Device Storage */}
+      <ImageUploadField
+        images={images}
+        onImagesChange={setImages}
+        maxImages={3}
+        label="Attach Photos of Product / Damage"
+        helperText="Upload photos from your device to help us quickly verify transit damage or incorrect items (PNG, JPG, WEBP)."
+      />
+
+      <label>
+        Additional message
+        <span className="help-form-help">Optional</span>
+        <textarea
+          name="message"
+          rows={4}
+          placeholder="Add any details about the item or issue."
+        />
+      </label>
+
+      <button className="button button-primary" type="submit" disabled={isSending}>
+        {isSending ? 'Submitting request...' : 'Submit return request'}
+      </button>
+
+      {status === 'error' && (
+        <p className="help-form-note help-form-error" role="alert">
+          {errorMessage || 'Something went wrong while sending your return request. Please try again.'}
+        </p>
+      )}
+    </form>
+  )
+}
+
+/**
+ * Enhanced Cancellation Form matching Screenshot 3 with Local Device Image Uploads
+ */
+function CancelForm({ onClose }: { onClose: () => void }) {
+  const formRef = useRef<HTMLFormElement>(null)
+  const [status, setStatus] = useState<RequestStatus>('idle')
+  const [isSending, setIsSending] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [customerName, setCustomerName] = useState('')
+  const [images, setImages] = useState<UploadedImage[]>([])
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!formRef.current || isSending) return
 
-    const form = formRef.current
-    const formData = new FormData(form)
+    const formData = new FormData(formRef.current)
     const name = String(formData.get('name') ?? '').trim()
     const email = String(formData.get('email') ?? '').trim()
     const orderNumber = String(formData.get('order_number') ?? '').trim()
@@ -234,13 +452,20 @@ function RequestForm({ action, onClose }: { action: 'return' | 'cancel'; onClose
 
     if (!name || !isValidEmail(email) || !orderNumber || !cancelReason) {
       setStatus('error')
-      setErrorMessage('Please complete the required fields: full name, valid email, order number, and reason for cancellation.')
+      setErrorMessage(
+        'Please complete the required fields: full name, valid email, order number, and reason for cancellation.',
+      )
       return
     }
 
     setIsSending(true)
     setStatus('idle')
     setErrorMessage('')
+
+    const filesSummary =
+      images.length > 0
+        ? `\n\n[Uploaded Proof from Device: ${images.length} file(s) - ${images.map((img) => img.name).join(', ')}]`
+        : ''
 
     try {
       await emailjs.send(
@@ -251,54 +476,188 @@ function RequestForm({ action, onClose }: { action: 'return' | 'cancel'; onClose
           email,
           order_number: orderNumber,
           cancel_reason: cancelReason,
-          message,
+          message: `${message}${filesSummary}`,
+          image_attachment_1: images[0]?.dataUrl ?? '',
+          image_attachment_2: images[1]?.dataUrl ?? '',
+          image_attachment_3: images[2]?.dataUrl ?? '',
+          attachment_preview: images[0]?.dataUrl ?? '',
+          has_attachments: images.length > 0 ? 'Yes' : 'No',
+          attachments_count: images.length,
+          attachments_summary: images.map((i) => i.name).join(', '),
         },
         { publicKey: CANCEL_ORDER_PUBLIC_KEY },
       )
 
       setCustomerName(name)
-      form.reset()
+      formRef.current.reset()
+      setImages([])
       setStatus('success')
     } catch {
       setStatus('error')
-      setErrorMessage('We could not send your cancellation request right now. Please try again in a moment.')
+      setErrorMessage(
+        'We could not send your cancellation request right now. Please try again in a moment.',
+      )
     } finally {
       setIsSending(false)
     }
   }
 
-  if (isReturn && status === 'success') {
-    return <div className="help-form help-track-success"><p className="eyebrow">Return request received</p><h2 id="help-dialog-title">Return request received</h2><p>Thanks, {customerName}. We've received your return request. Our Orders team will review your request and contact you at the email address provided.</p><p className="help-form-security-note">Please note that submitting a return request does not automatically approve a return or refund. Our team will verify the order and applicable return policy before processing it.</p><button className="button button-primary" type="button" onClick={onClose}>Back to Support</button></div>
+  if (status === 'success') {
+    return (
+      <div className="help-form help-track-success">
+        <p className="eyebrow">CANCELLATION REQUEST RECEIVED</p>
+        <h2 id="help-dialog-title">Cancellation request received</h2>
+        <p>
+          Thanks, {customerName}. We&apos;ve received your cancellation request
+          {images.length > 0 ? ' and uploaded attachments' : ''}. Our Orders team will verify your
+          order status and contact you at the email address provided.
+        </p>
+        <p className="help-form-security-note">
+          Please note that submitting a cancellation request does not automatically cancel your order.
+          Our Orders team will verify warehouse dispatch eligibility before processing cancellation.
+        </p>
+        <button className="button button-primary" type="button" onClick={onClose}>
+          Back to Support
+        </button>
+      </div>
+    )
   }
 
-  if (!isReturn) {
-    if (status === 'success') {
-      return <div className="help-form help-track-success"><p className="eyebrow">Cancellation request received</p><h2 id="help-dialog-title">Cancellation request received</h2><p>Thanks, {customerName}. We've received your cancellation request. Our Orders team will verify your order and contact you at the email address provided.</p><p className="help-form-security-note">Please note that submitting a cancellation request does not automatically cancel your order. Our Orders team will verify the order status and eligibility before processing the cancellation.</p><button className="button button-primary" type="button" onClick={onClose}>Back to Support</button></div>
-    }
+  return (
+    <form ref={formRef} className="help-form" onSubmit={handleSubmit}>
+      <p className="eyebrow">ORDER REQUEST</p>
+      <h2 id="help-dialog-title">REQUEST CANCELLATION</h2>
+      <p>Send your request as soon as possible. Cancellation is not confirmed until reviewed.</p>
 
-    return <form ref={formRef} className="help-form" onSubmit={handleCancelSubmit}><p className="eyebrow">Order request</p><h2 id="help-dialog-title">Request cancellation</h2><p>Send your request as soon as possible. Cancellation is not confirmed until reviewed.</p><div className="help-form-row"><label>Full name<input name="name" autoComplete="name" required /></label><label>Email address<input name="email" type="email" autoComplete="email" required /></label></div><label>Order number<input name="order_number" required /></label><label>Reason for cancellation<select name="cancel_reason" required><option value="">Select a reason</option>{CANCEL_REASON_OPTIONS.map((reason) => <option key={reason} value={reason}>{reason}</option>)}</select></label><label>Additional message<span className="help-form-help">Optional</span><textarea name="message" rows={5} /></label><button className="button button-primary" type="submit" disabled={isSending}>{isSending ? 'Sending...' : 'Submit cancellation request'}</button>{status === 'error' && <p className="help-form-note help-form-error" role="alert">{errorMessage || 'We could not send your cancellation request right now. Please try again in a moment.'}</p>}</form>
-  }
+      <div className="help-form-row">
+        <label>
+          Full name
+          <input name="name" autoComplete="name" required placeholder="Enter your full name" />
+        </label>
+        <label>
+          Email address
+          <input name="email" type="email" autoComplete="email" required placeholder="name@example.com" />
+        </label>
+      </div>
 
-  return <form ref={formRef} className="help-form" onSubmit={handleReturnSubmit}><p className="eyebrow">Order return</p><h2 id="help-dialog-title">Return order</h2><p>Tell us about the item you would like to return and our Orders team will review your request.</p><div className="help-form-row"><label>Full name<input name="name" autoComplete="name" required /></label><label>Email address<input name="email" type="email" autoComplete="email" required /></label></div><label>Order number<input name="order_number" required /></label><label>Reason for return<select name="return_reason" required><option value="">Select a reason</option>{RETURN_REASON_OPTIONS.map((reason) => <option key={reason} value={reason}>{reason}</option>)}</select></label><label>Additional message<span className="help-form-help">Optional</span><textarea name="message" rows={5} placeholder="Add any details about the item or issue." /></label><button className="button button-primary" type="submit" disabled={isSending}>{isSending ? 'Sending...' : 'Submit return request'}</button>{status === 'error' && <p className="help-form-note help-form-error" role="alert">{errorMessage || 'Something went wrong while sending your return request. Please try again.'}</p>}</form>
-}
+      <label>
+        Order number
+        <input name="order_number" required placeholder="e.g. SLB-10824" />
+      </label>
 
-function IssueForm({ onClose }: { onClose: () => void }) {
-  const formRef = useRef<HTMLFormElement>(null)
-  const [status, setStatus] = useState<RequestStatus>('idle')
-  const [isSending, setIsSending] = useState(false)
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); if (!formRef.current || isSending) return
-    setIsSending(true); setStatus('idle')
-    const form = formRef.current
-    try { await emailjs.sendForm(EMAILJS_SERVICE_ID, REPORT_ISSUE_TEMPLATE_ID, form, { publicKey: EMAILJS_PUBLIC_KEY }); form.reset(); setStatus('success') } catch { setStatus('error') } finally { setIsSending(false) }
-  }
-  return <form ref={formRef} className="help-form" onSubmit={handleSubmit}><p className="eyebrow">We are listening</p><h2 id="help-dialog-title">Report an issue</h2><p>Tell us what happened and our team will contact you shortly.</p><div className="help-form-row"><label>Customer name<input name="name" autoComplete="name" required /></label><label>Email address<input name="email" type="email" autoComplete="email" required /></label></div><label>Order number<input name="order_number" required /></label><label>Issue type<select name="issue_type" required><option value="">Select an issue</option>{['Damaged Product', 'Wrong Product', 'Missing Item', 'Delivery Problem', 'Payment Problem', 'Product Quality Issue', 'Other'].map((issue) => <option key={issue}>{issue}</option>)}</select></label><label>Issue description<textarea name="message" rows={5} required /></label><button className="button button-primary" type="submit" disabled={isSending}>{isSending ? 'Submitting...' : 'Submit issue'}</button>{status === 'success' && <p className="help-form-note help-form-success" role="status">Thank you. Your issue has been submitted successfully. Our team will contact you shortly.</p>}{status === 'error' && <p className="help-form-note help-form-error" role="alert">Something went wrong while submitting your issue. Please try again.</p>}{status === 'success' && <button className="button button-secondary" type="button" onClick={onClose}>Done</button>}</form>
+      <label>
+        Reason for cancellation
+        <select name="cancel_reason" required defaultValue="">
+          <option value="" disabled>
+            Select a reason
+          </option>
+          {CANCEL_REASON_OPTIONS.map((reason) => (
+            <option key={reason} value={reason}>
+              {reason}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {/* Image Upload Feature from Local Device Storage */}
+      <ImageUploadField
+        images={images}
+        onImagesChange={setImages}
+        maxImages={3}
+        label="Attach Screenshots / Proof (Optional)"
+        helperText="Upload screenshots from your device (e.g. duplicate payment or order details) to expedite cancellation."
+      />
+
+      <label>
+        Additional message
+        <span className="help-form-help">Optional</span>
+        <textarea
+          name="message"
+          rows={4}
+          placeholder="Any additional details regarding your cancellation."
+        />
+      </label>
+
+      <button className="button button-primary" type="submit" disabled={isSending}>
+        {isSending ? 'Submitting request...' : 'Submit cancellation request'}
+      </button>
+
+      {status === 'error' && (
+        <p className="help-form-note help-form-error" role="alert">
+          {errorMessage || 'We could not send your cancellation request right now. Please try again in a moment.'}
+        </p>
+      )}
+    </form>
+  )
 }
 
 function ContactForm() {
   const formRef = useRef<HTMLFormElement>(null)
   const [isSending, setIsSending] = useState(false)
   const [status, setStatus] = useState<RequestStatus>('idle')
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); if (!formRef.current || isSending) return; setIsSending(true); setStatus('idle'); try { await emailjs.sendForm(EMAILJS_SERVICE_ID, CONTACT_TEMPLATE_ID, formRef.current, { publicKey: EMAILJS_PUBLIC_KEY }); formRef.current.reset(); setStatus('success') } catch { setStatus('error') } finally { setIsSending(false) } }
-  return <section className="contact-form-section" aria-labelledby="contact-form-title"><div className="contact-form-container"><div className="contact-form-intro"><p className="eyebrow">Still need help?</p><h2 id="contact-form-title">Contact our team.</h2><p>Tell us what you need and the SlabGuardz team will get back to you.</p></div><form ref={formRef} className="contact-form" onSubmit={handleSubmit}><div className="contact-form-row"><label>Name<input name="name" type="text" autoComplete="name" required /></label><label>Email<input name="email" type="email" autoComplete="email" required /></label></div><label>Message<textarea name="message" rows={6} required /></label><div className="contact-form-footer"><button className="button button-primary" type="submit" disabled={isSending}>{isSending ? 'Sending...' : 'Send message'}</button>{status === 'success' && <p className="contact-form-status contact-form-status-success" role="status">Thank you! Your message has been sent successfully.</p>}{status === 'error' && <p className="contact-form-status contact-form-status-error" role="alert">Something went wrong. Please try again.</p>}</div></form></div></section>
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!formRef.current || isSending) return
+    setIsSending(true)
+    setStatus('idle')
+
+    try {
+      await emailjs.sendForm(
+        EMAILJS_SERVICE_ID,
+        CONTACT_TEMPLATE_ID,
+        formRef.current,
+        { publicKey: EMAILJS_PUBLIC_KEY },
+      )
+      formRef.current.reset()
+      setStatus('success')
+    } catch {
+      setStatus('error')
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  return (
+    <section className="contact-form-section" aria-labelledby="contact-form-title">
+      <div className="contact-form-container">
+        <div className="contact-form-intro">
+          <p className="eyebrow">Still need help?</p>
+          <h2 id="contact-form-title">Contact our team.</h2>
+          <p>Tell us what you need and the SlabGuardz team will get back to you.</p>
+        </div>
+        <form ref={formRef} className="contact-form" onSubmit={handleSubmit}>
+          <div className="contact-form-row">
+            <label>
+              Name
+              <input name="name" type="text" autoComplete="name" required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" autoComplete="email" required />
+            </label>
+          </div>
+          <label>
+            Message
+            <textarea name="message" rows={6} required />
+          </label>
+          <div className="contact-form-footer">
+            <button className="button button-primary" type="submit" disabled={isSending}>
+              {isSending ? 'Sending...' : 'Send message'}
+            </button>
+            {status === 'success' && (
+              <p className="contact-form-status contact-form-status-success" role="status">
+                Thank you! Your message has been sent successfully.
+              </p>
+            )}
+            {status === 'error' && (
+              <p className="contact-form-status contact-form-status-error" role="alert">
+                Something went wrong. Please try again.
+              </p>
+            )}
+          </div>
+        </form>
+      </div>
+    </section>
+  )
 }

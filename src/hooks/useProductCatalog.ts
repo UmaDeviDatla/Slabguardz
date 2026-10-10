@@ -22,7 +22,7 @@ export function useProductCatalog({ products, category, search, sort }: UseProdu
         ? product.categories
         : [product.category]
       const matchesCategory = category === 'all' || assignedCategories.includes(category)
-      const searchableText = `${product.name} ${assignedCategories.join(' ')} ${product.category}`.toLowerCase()
+      const searchableText = `${product.name} ${assignedCategories.join(' ')} ${product.category} ${product.description ?? ''} ${product.badge ?? ''}`.toLowerCase()
       return matchesCategory && (!normalizedSearch || searchableText.includes(normalizedSearch))
     })
 

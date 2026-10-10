@@ -3,12 +3,23 @@ export type ProductCategory =
   | 'slabguardz-protection'
   | 'accessories'
 
+export type ProductVariant = {
+  id: string
+  title: string
+  sku?: string
+  isAvailable: boolean
+  price: number
+  compareAtPrice?: number
+  currencyCode?: string
+}
+
 export type Product = {
   id: string
   name: string
   slug?: string
   variantId?: string
   variantTitle?: string
+  variants?: ProductVariant[]
   category: ProductCategory
   categories?: ProductCategory[]
   collectionIds?: string[]

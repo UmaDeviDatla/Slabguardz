@@ -28,12 +28,52 @@ export function ShopPage() {
       <Container className="shop-page-content">
         <ShopControls category={category} search={search} sort={sort} onCategoryChange={setCategory} onSearchChange={setSearch} onSortChange={setSort} />
         <CollectionToolbar count={collectionCount} />
-        {isLoading && <div className="shop-empty-state" role="status"><h2>Loading products</h2><p>Fetching the latest collection.</p></div>}
-        {!isLoading && error && <div className="shop-empty-state" role="alert"><h2>Products unavailable</h2><p>{error}</p><Button variant="secondary" onClick={retry}>Retry</Button></div>}
-        {!isLoading && !error && <>
-          {catalog.products.length > 0 ? <div className="product-grid">{catalog.products.map((product) => <ProductCard key={product.id} product={product} />)}</div> : <div className="shop-empty-state"><h2>No products found</h2><p>Try a different search or category.</p></div>}
-          {catalog.hasMore && <div className="shop-load-more"><Button variant="secondary" onClick={catalog.loadMore}>Load more</Button></div>}
-        </>}
+        {isLoading && products.length === 0 && (
+          <div className="product-grid">
+            {[1, 2, 3, 4, 5, 6].map((idx) => (
+              <div key={idx} className="graded-product-card skeleton-card" style={{ minHeight: 380, padding: 16 }}>
+                <div className="skeleton" style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: 10 }} />
+                <div style={{ padding: '16px 0 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div className="skeleton skeleton-text" style={{ width: '35%', height: 12, borderRadius: 4 }} />
+                  <div className="skeleton skeleton-title" style={{ width: '85%', height: 20, borderRadius: 4 }} />
+                  <div className="skeleton skeleton-text" style={{ width: '30%', height: 18, borderRadius: 4, marginTop: 8 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!isLoading && error && (
+          <div className="shop-empty-state" role="alert">
+            <h2>Products unavailable</h2>
+            <p>{error}</p>
+            <Button variant="secondary" onClick={retry}>
+              Retry
+            </Button>
+          </div>
+        )}
+        {(!isLoading || products.length > 0) && !error && (
+          <>
+            {catalog.products.length > 0 ? (
+              <div className="product-grid">
+                {catalog.products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="shop-empty-state">
+                <h2>No products found</h2>
+                <p>Try a different search or category.</p>
+              </div>
+            )}
+            {catalog.hasMore && (
+              <div className="shop-load-more">
+                <Button variant="secondary" onClick={catalog.loadMore}>
+                  Load more
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </Container>
     </div>
   )
