@@ -54,87 +54,90 @@ const heroTrustSignals = [
 
 export function HeroSection() {
   return (
-    <section className="graded-hero" aria-label="SlabGuardz Graded Card Protection">
-      {/* Fixed High-Resolution Hero Banner (Uncropped) */}
-      <div className="gg-hero-banner-wrapper">
-        <div className="gg-hero-banner-stage">
-          <div className="gg-hero-slide">
-            <Link to="/shop" className="gg-hero-slide-link" aria-label="Shop SlabGuardz Collection">
-              <img
-                src="/banners/banner-1.jpg"
-                alt="SlabGuardz Precision Slab Armor & Grail Collection"
-                className="gg-hero-banner-img"
-                loading="eager"
-                fetchPriority="high"
-                decoding="sync"
-              />
-            </Link>
-          </div>
+    <section className="graded-hero luxury-hero" aria-label="SlabGuardz Graded Card Protection">
+      {/* Ultra-Luxury $10,000+ Hero Stage: Content positioned directly on the client's high-res banner image */}
+      <div className="luxury-hero-banner">
+        {/* Full-bleed high-res client banner photography */}
+        <img
+          src="/banners/banner-1.jpg"
+          alt="SlabGuardz Precision Slab Armor & Grail Collection"
+          className="luxury-hero-bg-img"
+          loading="eager"
+          fetchPriority="high"
+          decoding="sync"
+        />
+
+        {/* Multi-layered luxury glassmorphism & cinematic dark vignette overlay */}
+        <div className="luxury-hero-overlay" />
+
+        {/* Floating Hero Content Overlay */}
+        <div className="luxury-hero-content-wrap">
+          {/* Eyebrow badge */}
+          <motion.div
+            className="luxury-hero-eyebrow"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="eyebrow-accent-dot" />
+            <span>PRECISION PROTECTION FOR GRADED CARDS</span>
+          </motion.div>
+
+          {/* Main Headline */}
+          <motion.h1
+            className="luxury-hero-title"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            THE ULTIMATE CASE
+            <br />
+            FOR GRADED CARDS.
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            className="luxury-hero-subtitle"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Engineered bumper cases and collector accessories tailored for PSA, CGC, and modern trading card slabs. Armor-grade TPU defense with zero obstruction.
+          </motion.p>
+
+          {/* CTA Buttons */}
+          <motion.div
+            className="luxury-hero-cta"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <ButtonLink to="/shop" variant="primary" className="btn-luxury-primary">
+              Shop All Products <ArrowUpRight size={17} />
+            </ButtonLink>
+            <ButtonLink to="/category/slabguardz-protection" variant="secondary" className="btn-luxury-secondary">
+              <ShieldCheck size={17} /> Explore Protection
+            </ButtonLink>
+          </motion.div>
+
+          {/* GradedGuard-style Quick Category Filter Bar Floating on the Banner */}
+          <motion.div
+            className="luxury-filter-bar"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.38 }}
+          >
+            {heroQuickFilters.map((filter) => (
+              <Link key={filter.label} to={filter.to} className="luxury-filter-pill">
+                {filter.label}
+              </Link>
+            ))}
+          </motion.div>
         </div>
       </div>
 
-      <div className="graded-hero-container">
-        {/* Eyebrow badge */}
-        <motion.div
-          className="graded-hero-eyebrow"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="eyebrow-accent-dot" />
-          <span>PRECISION PROTECTION FOR GRADED CARDS</span>
-        </motion.div>
-
-        {/* Main Headline */}
-        <motion.h1
-          className="graded-hero-title"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          THE ULTIMATE CASE FOR GRADED CARDS.
-        </motion.h1>
-
-        {/* Subtitle */}
-        <motion.p
-          className="graded-hero-subtitle"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Engineered bumper cases and collector accessories tailored for PSA, CGC, and modern trading card slabs. Armor-grade TPU defense with zero obstruction.
-        </motion.p>
-
-        {/* CTA Buttons */}
-        <motion.div
-          className="graded-hero-cta"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <ButtonLink to="/shop" variant="primary" className="btn-graded-primary">
-            Shop All Products <ArrowUpRight size={17} />
-          </ButtonLink>
-          <ButtonLink to="/category/slabguardz-protection" variant="secondary" className="btn-graded-secondary">
-            <ShieldCheck size={17} /> Explore Protection
-          </ButtonLink>
-        </motion.div>
-
-        {/* GradedGuard-style Quick Category Filter Bar */}
-        <motion.div
-          className="graded-filter-bar"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.38 }}
-        >
-          {heroQuickFilters.map((filter) => (
-            <Link key={filter.label} to={filter.to} className="graded-filter-pill">
-              {filter.label}
-            </Link>
-          ))}
-        </motion.div>
-
-        {/* Shop by Category Section (Exchanged into Hero Spotlight position) */}
+      {/* Transition directly into Shop by Category below the banner */}
+      <div className="graded-hero-container luxury-below-banner">
         <div className="graded-spotlight-section">
           <AnimateOnScroll>
             <SectionHeading
