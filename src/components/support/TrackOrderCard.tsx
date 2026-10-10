@@ -1,4 +1,4 @@
-import { CheckCircle2, ChevronRight, ExternalLink, Package, RefreshCw, Send, ShieldCheck, Truck } from 'lucide-react'
+import { CheckCircle2, ChevronRight, ExternalLink, Package, RefreshCw, Send, Truck } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import emailjs from '@emailjs/browser'
 
@@ -133,12 +133,6 @@ export function TrackOrderCard({ initialQuery = '', onClose }: TrackOrderCardPro
               Track Order
             </button>
           </form>
-
-          <div className="rezoni-track-trust">
-            <span className="rezoni-trust-pill">
-              <ShieldCheck size={14} /> Official Shiprocket Integration
-            </span>
-          </div>
         </div>
       ) : (
         /* Tracking Result View */
