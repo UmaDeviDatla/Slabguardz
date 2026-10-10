@@ -3015,40 +3015,41 @@ html, body, #root, .storefront-shell, main, .home-page, .container, .collection-
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 1rem;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
 }
 
 .spotlight-kicker {
-  font-size: 0.72rem;
+  margin: 0;
+  color: var(--color-accent);
+  font-size: var(--text-xs);
   font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #ff6b22;
-  margin: 0 0 4px;
+  letter-spacing: .14em;
   text-transform: uppercase;
 }
 
 .spotlight-title {
-  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-  letter-spacing: -0.02em;
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 5vw, 3.25rem);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  line-height: 1.05;
 }
 
 .spotlight-view-all {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #0f172a;
+  gap: var(--space-2);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: 650;
 }
 
 .spotlight-view-all:hover {
-  color: #ff6b22;
+  color: var(--color-accent-hover);
 }
 
 .graded-spotlight-grid {
@@ -3749,7 +3750,7 @@ html, body, #root, .storefront-shell, main, .home-page, .container, .collection-
     text-align: left !important;
   }
   .spotlight-title {
-    font-size: 1.35rem !important;
+    font-size: clamp(1.75rem, 6vw, 2.4rem) !important;
   }
 
   /* Single Column Product Grids on Phones for maximum clarity & zero overflow */

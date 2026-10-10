@@ -1,4 +1,4 @@
-import { ArrowUpRight, Check, ShoppingBag } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Check, ShoppingBag } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
@@ -6,6 +6,8 @@ import { Container } from '../ui/Container'
 import { useProductCatalogState } from '../../hooks/useProductCatalogState'
 import { PriceDisplay } from '../ui/PriceDisplay'
 import { useCart } from '../../hooks/useCart'
+import { SectionHeading } from '../ui/SectionHeading'
+import { AnimateOnScroll } from '../ui/AnimateOnScroll'
 
 function getProductDescription(product: { description?: string; category: string; name: string }) {
   if (product.description && product.description.trim()) {
@@ -38,16 +40,17 @@ export function CategoryGridSection() {
     <section className="home-section home-categories-graded">
       <Container>
         <div className="graded-spotlight-section" style={{ marginTop: 0 }}>
-          <div className="graded-spotlight-header">
-            <div>
-              <p className="spotlight-kicker">FEATURED DROPS</p>
-              <h2 className="spotlight-title">Precision Cases & Collector Grails</h2>
-            </div>
-            <Link to="/shop" className="spotlight-view-all">
-              <span>View All ({products.length || 3})</span>
-              <ArrowUpRight size={15} />
-            </Link>
-          </div>
+          <AnimateOnScroll>
+            <SectionHeading
+              eyebrow="FEATURED DROPS"
+              title="PRECISION CASES & COLLECTOR GRAILS"
+              action={
+                <Link className="text-link" to="/shop">
+                  View all ({products.length || 3}) <ArrowRight size={15} />
+                </Link>
+              }
+            />
+          </AnimateOnScroll>
 
           <div className="graded-spotlight-grid">
             {spotlightProducts.length > 0 ? (
